@@ -1,0 +1,90 @@
+import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import AuthModal from "./AuthModal";
+
+export default function HeaderAvatar() {
+  const { user, profile, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const menuRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const displayName =
+    profile?.display_name || user?.displayName || user?.email || "";
+
+  const avatarUrl = profile?.avatar_url || user?.photoURL || null;
+
+  function getInitials(name) {
+    if (!name) return "";
+    const parts = name.trim().split(" ");
+    const first = parts[0]?.[0] || "";
+    const second = parts[1]?.[0] || "";
+    return (first + second).toUpperCase();
+  }
+
+  if (!user) {
+    return (
+      <>
+        <div className="text-end">
+          <button
+            className="btn btn-outline-dark btn-sm"
+            onClick={() => setShowAuth(true)}
+          >
+            Login / Register
+          </button>
+        </div>
+        <AuthModal show={showAuth} onClose={() => setShowAuth(false)} />
+      </>
+    );
+  }
+
+  return (
+    <div className="user-perfil position-relative" ref={menuRef}>
+      <h4 className="user-perfil-name text-end text-truncate">
+        <Link to="/profile">{displayName}</Link>
+      </h4>
+
+      <Link to="/profile" className="user-perfil-img">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="Avatar" />
+        ) : (
+          <span className="placeholder">{getInitials(displayName)}</span>
+        )}
+      </Link>
+
+      <button
+        className="btn p-0 border-0 bg-transparent user-perfil-dots"
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <i className="bi bi-three-dots-vertical fs-5"></i>
+      </button>
+
+      {open && (
+        <div
+          className="dropdown-menu show position-absolute end-0 mt-2 shadow-sm"
+          style={{ minWidth: "150px" }}
+        >
+          <Link className="dropdown-item" to="/settings">
+            <i className="bi bi-gear me-2"></i> Settings
+          </Link>
+          <Link className="dropdown-item" to="/addevent">
+            <i className="bi bi-plus-circle me-2"></i> Add Event
+          </Link>
+          <button className="dropdown-item text-danger" onClick={logout}>
+            <i className="bi bi-box-arrow-right me-2"></i> Logout
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
