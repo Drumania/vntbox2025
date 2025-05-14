@@ -130,7 +130,6 @@ const Calendar = ({ events = [] }) => {
                               : "none",
                           }}
                         >
-                          <span className="event-label">{event.title}</span>
                           <div className="event-tooltip">
                             <img src={event.image_url} alt={event.title} />
                             <div>
