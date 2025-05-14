@@ -4,7 +4,6 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
-  updateProfile,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -12,6 +11,7 @@ import { auth, db, googleProvider } from "../firebase";
 
 const AuthContext = createContext();
 
+// Convierte texto en slug único (ej: "martin brumana" => "martin-brumana")
 const slugify = (text) =>
   text
     .toLowerCase()
@@ -20,13 +20,14 @@ const slugify = (text) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
+// Genera un slug único verificando en Firestore
 const generateUniqueSlug = async (baseName) => {
   let slug = slugify(baseName);
   let suffix = 1;
 
   while (true) {
-    const ref = doc(db, "profiles", slug);
-    const exists = await getDoc(ref);
+    const query = doc(db, "users", slug);
+    const exists = await getDoc(query);
     if (!exists.exists()) break;
     slug = `${slugify(baseName)}-${suffix++}`;
   }
@@ -39,14 +40,14 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Cargar perfil desde Firestore
+  // Carga el perfil extendido del usuario desde Firestore
   const loadProfile = async (uid) => {
     const ref = doc(db, "users", uid);
     const snap = await getDoc(ref);
     if (snap.exists()) setProfile(snap.data());
   };
 
-  // Crear perfil si no existe
+  // Crea el perfil en Firestore si aún no existe
   const createProfileIfNeeded = async (firebaseUser) => {
     const uid = firebaseUser.uid;
     const ref = doc(db, "users", uid);
@@ -72,8 +73,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Escuchar cambios de autenticación
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("👤 Firebase user:", firebaseUser);
+
       if (firebaseUser) {
         setUser(firebaseUser);
         await createProfileIfNeeded(firebaseUser);
@@ -81,12 +85,14 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setProfile(null);
       }
+
       setLoading(false);
     });
 
     return () => unsub();
   }, []);
 
+  // Funciones públicas
   const register = async (email, password) => {
     const { user } = await createUserWithEmailAndPassword(
       auth,
@@ -102,12 +108,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
-    const { user } = await signInWithPopup(auth, googleProvider);
-    return user;
+    await createProfileIfNeeded(firebaseUser);
   };
 
   const logout = async () => {
     await signOut(auth);
+  };
+
+  const refreshProfile = async () => {
+    if (user) await loadProfile(user.uid);
   };
 
   return (
@@ -120,6 +129,7 @@ export const AuthProvider = ({ children }) => {
         login,
         loginWithGoogle,
         logout,
+        refreshProfile,
       }}
     >
       {children}

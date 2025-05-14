@@ -1,7 +1,7 @@
-import MainEvents from "../components/MainEvents";
-import WhoAdd from "../components/WhoAdd";
-import Footer from "../components/Footer";
-import Calendar from "../components/Calendar";
+import MainEvents from "@/components/MainEvents";
+import WhoAdd from "@/components/WhoAdd";
+import Footer from "@/components/Footer";
+import Calendar from "@/components/Calendar";
 
 export default function Home() {
   return (
