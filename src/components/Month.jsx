@@ -1,36 +1,37 @@
 import React from "react";
 import Day from "./Day";
-import { fakeEvents } from "../API/FakeDayEvents";
 
-const Month = ({ year, month, dayNow }) => {
-  function daysInMonth(year, month) {
-    return new Date(year, month + 1, 0).getDate();
-  }
-  // console.log(month);
-  let daysInMonthNumber = daysInMonth(year, month);
+const Month = ({ year, month, dayNow, events = [] }) => {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startsOn = new Date(year, month, 1).getDay();
 
   return (
     <>
-      {[...Array(daysInMonthNumber)].map((x, i) => (
-        <div
-          key={i}
-          className={
-            i + 1 === dayNow
-              ? "today day"
-              : i + 1 === 1
-              ? `first-day-${startsOn} day`
-              : new Date(year, month, i + 1).getDay() === 6
-              ? "day finde"
-              : new Date(year, month, i + 1).getDay() === 0
-              ? "day finde"
-              : "day "
-          }
-        >
-          <label className="day-label">{i + 1}</label>
-          <Day eventInDay={fakeEvents.find(element => element.day === i + 1)} />
-        </div>
-      ))}
+      {[...Array(daysInMonth)].map((_, i) => {
+        const currentDay = i + 1;
+        const dayEvents = (events || []).filter((event) => {
+          const [y, m, d] = event.date.split("-").map(Number);
+          return y === year && m === month + 1 && d === currentDay;
+        });
+
+        return (
+          <div
+            key={i}
+            className={
+              currentDay === dayNow
+                ? "today day"
+                : currentDay === 1
+                ? `first-day-${startsOn} day`
+                : [6, 0].includes(new Date(year, month, currentDay).getDay())
+                ? "day finde"
+                : "day"
+            }
+          >
+            <label className="day-label">{currentDay}</label>
+            <Day events={dayEvents} />
+          </div>
+        );
+      })}
     </>
   );
 };

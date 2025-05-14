@@ -1,62 +1,103 @@
-import React, { useState } from "react";
-import Month from "./Month";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
-const Calendar = () => {
-  const d = new Date();
+const Calendar = ({ events = [] }) => {
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
+  const dayNow = today.getDate();
+  const [loadedImages, setLoadedImages] = useState({});
 
-  const [year, setYear] = useState(d.getFullYear());
-  const [month, setMonth] = useState(d.getMonth());
-  // const [day, setDay] = useState(d.getDate());
-  const day = d.getDate();
   const locale = "es";
-
-  const intlForMonths = new Intl.DateTimeFormat(locale, { month: "long" });
-  //  const intlForWeeks = new Intl.DateTimeFormat(locale, { weekday: "long" });
-  const monthName = intlForMonths.format(new Date(year, month));
+  const monthName = new Intl.DateTimeFormat(locale, { month: "long" }).format(
+    new Date(year, month)
+  );
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startsOn = new Date(year, month, 1).getDay();
 
   const prevMonth = () => {
-    if (month - 1 === "-1") {
-      setMonth(11);
-      setYear(year - 1);
-    } else {
-      setMonth(month - 1);
-    }
-    console.log(month);
+    setMonth((prev) => (prev - 1 + 12) % 12);
+    if (month === 0) setYear((prev) => prev - 1);
   };
 
   const nextMonth = () => {
-    if (month + 1 === "12") {
-      setMonth(0);
-      setYear(year + 1);
-    } else {
-      setMonth(month + 1);
-    }
-    console.log(month);
+    setMonth((prev) => (prev + 1) % 12);
+    if (month === 11) setYear((prev) => prev + 1);
   };
+
+  const getEventsForDay = (day) => {
+    return events.filter((event) => {
+      const [y, m, d] = event.date.split("-").map(Number);
+      return y === year && m === month + 1 && d === day;
+    });
+  };
+
+  // Preload images
+  useEffect(() => {
+    events.forEach((event) => {
+      if (!loadedImages[event.slug]) {
+        const img = new Image();
+        img.src = event.image_url;
+        img.onload = () => {
+          setLoadedImages((prev) => ({ ...prev, [event.slug]: true }));
+        };
+      }
+    });
+  }, [events]);
+
+  // Touch tooltip for mobile
+  useEffect(() => {
+    const handleClick = (e) => {
+      const allEventElements = document.querySelectorAll(".event-in-cal");
+
+      allEventElements.forEach((el) => {
+        const tooltip = el.querySelector(".event-tooltip");
+        if (!tooltip) return;
+
+        if (el.contains(e.target)) {
+          // Si se hace clic dentro del evento, mostrar tooltip solo en ese
+          allEventElements.forEach((otherEl) =>
+            otherEl.classList.remove("show-tooltip")
+          );
+          el.classList.add("show-tooltip");
+        } else {
+          // Si se hace clic fuera, ocultar
+          el.classList.remove("show-tooltip");
+        }
+      });
+    };
+
+    document.addEventListener("click", handleClick);
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, []);
 
   return (
     <div className="custom-box custom-box-height-full p-3">
       <div className="row">
         <div className="col-12 wraper-calendar">
-          <div className="calendar-tools">
-            <div>
-              <a href="#!" onClick={() => prevMonth()}>
-                <i className="fas fa-chevron-left"></i>
-              </a>
-              <a href="#!" onClick={() => nextMonth()}>
-                <i className="fas fa-chevron-right"></i>
-              </a>
-              <h2>
+          <div className="calendar-tools d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex align-items-center gap-2">
+              <button
+                onClick={prevMonth}
+                className="btn btn-sm btn-outline-secondary"
+              >
+                <i className="bi bi-chevron-left"></i>
+              </button>
+              <button
+                onClick={nextMonth}
+                className="btn btn-sm btn-outline-secondary"
+              >
+                <i className="bi bi-chevron-right"></i>
+              </button>
+              <h2 className="mb-0 ms-3">
                 {monthName} {year}
               </h2>
             </div>
             <div>
-              <a href="#!" className="opacity-10">
-                <i className="fas fa-th"></i>
-              </a>
-              <a href="#!" className="opacity-5">
-                <i className="fas fa-bars"></i>
-              </a>
+              <i className="bi bi-grid me-2 opacity-75"></i>
+              <i className="bi bi-list opacity-50"></i>
             </div>
           </div>
 
@@ -69,7 +110,53 @@ const Calendar = () => {
             <div className="day-name">Sábado</div>
             <div className="day-name">Domingo</div>
 
-            <Month year={year} month={month} dayNow={day} />
+            {[...Array(daysInMonth)].map((_, i) => {
+              const day = i + 1;
+              const weekday = new Date(year, month, day).getDay();
+              const eventList = getEventsForDay(day);
+
+              let className = "day";
+              if (day === dayNow) className += " today";
+              if (day === 1) className += ` first-day-${startsOn}`;
+              if (weekday === 0 || weekday === 6) className += " finde";
+
+              return (
+                <div key={day} className={className}>
+                  <label className="day-label">{day}</label>
+                  <ul>
+                    {eventList.map((event, idx) => (
+                      <li key={idx}>
+                        <div
+                          className={`event-in-cal ${
+                            loadedImages[event.slug] ? "loaded" : ""
+                          }`}
+                          style={{
+                            backgroundImage: loadedImages[event.slug]
+                              ? `url(${event.image_url})`
+                              : "none",
+                          }}
+                        >
+                          <span className="event-label">{event.title}</span>
+                          <div className="event-tooltip">
+                            <img src={event.image_url} alt={event.title} />
+                            <div>
+                              <strong>{event.title}</strong>
+                              <br />
+                              <Link
+                                to={`/e/${event.slug}`}
+                                className="btn btn-sm btn-outline-light mt-1"
+                              >
+                                Ver evento
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

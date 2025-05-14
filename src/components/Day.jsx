@@ -1,31 +1,18 @@
 import React from "react";
 import EventsByDay from "./EventsByDay";
 
-// import axios from 'axios';
-
-const Day = ({ eventInDay }) => {
-  // const [post, setPost] = useState(null);
-  // const baseURL = "https://jsonplaceholder.typicode.com/posts";
-
-  // useEffect(() => {
-  //
-  //   axios.get(baseURL).then((response) => {
-  //     setPost(response.data);
-  //   });
-  //   console.log(post)
-  // }, []);
-
+const Day = ({ events }) => {
   return (
     <ul>
-      <li>
-        {eventInDay && (
+      {events.map((event, idx) => (
+        <li key={idx}>
           <EventsByDay
-            nameAccount={eventInDay.nameAccount}
-            imgAccount={eventInDay.imgAccount}
-            eventLink={eventInDay.event_link}
+            nameAccount={event.title}
+            imgAccount={event.image_url}
+            eventLink={`/e/${event.slug}`}
           />
-        )}
-      </li>
+        </li>
+      ))}
     </ul>
   );
 };

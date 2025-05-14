@@ -12,30 +12,48 @@ export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [userEvents, setUserEvents] = useState([]);
 
   useEffect(() => {
-    const loadProfile = async () => {
-      const q = query(collection(db, "users"), where("username", "==", slug));
+    const loadProfileAndEvents = async () => {
+      try {
+        const q = query(collection(db, "users"), where("username", "==", slug));
+        const snap = await getDocs(q);
 
-      const snap = await getDocs(q);
+        if (snap.empty) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
 
-      if (snap.empty) {
+        const userDoc = snap.docs[0];
+        const userData = userDoc.data();
+        const userId = userDoc.id;
+
+        setProfile({ ...userData, uid: userId });
+
+        // Cargar eventos del usuario
+        const eventsQuery = query(
+          collection(db, "events"),
+          where("user_id", "==", userId)
+        );
+        const eventSnap = await getDocs(eventsQuery);
+        const events = eventSnap.docs.map((doc) => doc.data());
+        setUserEvents(events);
+      } catch (error) {
+        console.error("Error loading profile or events:", error);
         setNotFound(true);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const data = snap.docs[0].data();
-      console.log(data);
-      setProfile(data);
-      setLoading(false);
     };
 
-    loadProfile();
+    loadProfileAndEvents();
   }, [slug]);
 
   if (loading) return <div className="container py-5">Loading...</div>;
-  if (notFound) return <div className="container py-5">User not found 😢</div>;
+  if (notFound)
+    return <div className="container py-5 text-danger">User not found 😢</div>;
 
   return (
     <div className="row">
@@ -69,20 +87,18 @@ export default function Profile() {
           <p className="my-3">
             {profile.bio}
             <br />
-            <a
-              href="http://www.netflix.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              www.netflix.com
-            </a>
+            {profile.social_links?.linkedin && (
+              <a
+                href={profile.social_links.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {profile.social_links.linkedin}
+              </a>
+            )}
           </p>
 
-          <div
-            className="btn-group"
-            role="group"
-            aria-label="Default button group"
-          >
+          <div className="btn-group" role="group">
             <button type="button" className="btn">
               <i className="fab fa-instagram"></i>
             </button>
@@ -106,7 +122,7 @@ export default function Profile() {
       </aside>
 
       <main className="col-12 col-lg-9">
-        <Calendar />
+        <Calendar events={userEvents} />
       </main>
     </div>
   );
