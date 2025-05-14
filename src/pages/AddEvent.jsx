@@ -51,26 +51,39 @@ export default function AddEvent() {
     setSaving(true);
     let image_url = "";
 
-    if (imageFile) {
-      const fileRef = ref(storage, `event-covers/${slug}`);
-      await uploadBytes(fileRef, imageFile);
-      image_url = await getDownloadURL(fileRef);
+    try {
+      if (imageFile) {
+        const fileRef = ref(storage, `event-covers/${slug}-${Date.now()}`);
+        await uploadBytes(fileRef, imageFile);
+        image_url = await getDownloadURL(fileRef);
+      }
+
+      await addDoc(collection(db, "events"), {
+        title,
+        slug,
+        date,
+        time,
+        location,
+        description,
+        image_url,
+        user_id: user.uid,
+        created_at: serverTimestamp(),
+      });
+
+      alert("Event created!");
+      // limpiar el formulario
+      setTitle("");
+      setSlug("");
+      setDate("");
+      setTime("");
+      setLocation("");
+      setDescription("");
+      setImageFile(null);
+    } catch (error) {
+      console.error("Error creating event:", error);
+      alert("There was an error creating the event.");
     }
 
-    await addDoc(collection(db, "events"), {
-      title,
-      slug,
-      date,
-      time,
-      location,
-      description,
-      image_url,
-      user_id: user.uid,
-      created_at: serverTimestamp(),
-    });
-
-    alert("Event created!");
-    // Opcional: redirigir o limpiar el form
     setSaving(false);
   };
 
