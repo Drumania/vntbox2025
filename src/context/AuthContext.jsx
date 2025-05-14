@@ -76,8 +76,6 @@ export const AuthProvider = ({ children }) => {
   // Escuchar cambios de autenticación
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("👤 Firebase user:", firebaseUser);
-
       if (firebaseUser) {
         setUser(firebaseUser);
         await createProfileIfNeeded(firebaseUser);

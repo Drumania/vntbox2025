@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
@@ -59,14 +59,19 @@ export default function Profile() {
     <div className="row">
       <aside className="col-12 col-lg-3">
         <div className="custom-box row mb-4 no-gutters">
-          <div className="col-10 mb-2 mr-auto ml-auto text-center">
-            <img
-              src={profile.avatar_url || "/avatar_placeholder.png"}
-              alt={profile.display_name}
-              width="180"
-              className="rounded-circle border"
-            />
+          <div className="avatar-container">
+            <div className="avatar-wrapper">
+              <img
+                src={profile.avatar_url || "/avatar_placeholder.png"}
+                alt={profile.display_name}
+                className="avatar-image"
+              />
+              <Link to="/settings" className="avatar-overlay">
+                <i className="bi bi-gear-fill"></i>
+              </Link>
+            </div>
           </div>
+
           <div className="col-12 row no-gutters">
             <h1>{profile.display_name}</h1>
             <h2 className="col-10">/{profile.username}</h2>
