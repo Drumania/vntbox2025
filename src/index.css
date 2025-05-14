@@ -257,8 +257,6 @@ a:hover {
 
 /* avatar */
 .avatar-container {
-  position: relative;
-  width: 100%;
   max-width: 180px;
   margin: 0 auto;
 }
@@ -280,10 +278,11 @@ a:hover {
   border: 3px solid #ccc;
 }
 
+/* Overlay con ícono de configuración */
 .avatar-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 50%;
   opacity: 0;
   display: flex;
@@ -298,6 +297,7 @@ a:hover {
 .avatar-wrapper:hover .avatar-overlay {
   opacity: 1;
 }
+
 /* Calendar content */
 .calendar {
   list-style: none;
