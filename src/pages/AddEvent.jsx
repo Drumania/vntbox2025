@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { db, storage } from "../firebase";
 import {
   collection,
@@ -31,6 +32,8 @@ export default function AddEvent() {
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkSlug = async () => {
@@ -70,7 +73,7 @@ export default function AddEvent() {
         created_at: serverTimestamp(),
       });
 
-      alert("Event created!");
+      setShowPopup(true);
       // limpiar el formulario
       setTitle("");
       setSlug("");
@@ -79,6 +82,9 @@ export default function AddEvent() {
       setLocation("");
       setDescription("");
       setImageFile(null);
+      setTimeout(() => {
+        navigate(`/e/${slug}`);
+      }, 5000);
     } catch (error) {
       console.error("Error creating event:", error);
       alert("There was an error creating the event.");
@@ -182,6 +188,29 @@ export default function AddEvent() {
       >
         {saving ? "Saving..." : "Create Event"}
       </button>
+
+      {showPopup && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
+            zIndex: 1050,
+          }}
+        >
+          <div
+            className="bg-white p-4 rounded shadow text-center"
+            style={{ minWidth: "280px" }}
+          >
+            <h4 className="mb-3">Creando evento...</h4>
+            <div className="spinner-border text-primary" role="status" />
+            <p className="mt-3 text-muted" style={{ fontSize: "0.9rem" }}>
+              No cierres esta ventana.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

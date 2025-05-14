@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import AddEvent from "./pages/AddEvent";
+import Event from "./pages/Event";
 import Logout from "./pages/Logout";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/addevent" element={<AddEvent />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/:slug" element={<Profile />} />
+          <Route path="/e/:slug" element={<Event />} />
         </Route>
       </Routes>
     </BrowserRouter>
