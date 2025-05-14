@@ -242,10 +242,12 @@ a:hover {
   align-items: center;
 }
 
-.calendar-tools > div a {
-  font-size: 22px;
+.calendar-tools > div button {
+  font-size: 16px;
   display: block;
-  padding: 8px;
+  padding: 0 8px;
+  background: transparent;
+  border: none;
 }
 
 .calendar-tools > div h2 {

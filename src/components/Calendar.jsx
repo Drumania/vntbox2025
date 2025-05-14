@@ -79,26 +79,20 @@ const Calendar = ({ events = [] }) => {
         <div className="col-12 wraper-calendar">
           <div className="calendar-tools d-flex justify-content-between align-items-center mb-3">
             <div className="d-flex align-items-center gap-2">
-              <button
-                onClick={prevMonth}
-                className="btn btn-sm btn-outline-secondary"
-              >
+              <button onClick={prevMonth}>
                 <i className="bi bi-chevron-left"></i>
               </button>
-              <button
-                onClick={nextMonth}
-                className="btn btn-sm btn-outline-secondary"
-              >
+              <button onClick={nextMonth}>
                 <i className="bi bi-chevron-right"></i>
               </button>
               <h2 className="mb-0 ms-3">
                 {monthName} {year}
               </h2>
             </div>
-            <div>
+            {/* <div>
               <i className="bi bi-grid me-2 opacity-75"></i>
               <i className="bi bi-list opacity-50"></i>
-            </div>
+            </div> */}
           </div>
 
           <div className="calendar">
