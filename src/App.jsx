@@ -20,6 +20,7 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/addevent" element={<AddEvent />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/:slug" element={<Profile />} />
         </Route>
       </Routes>
     </BrowserRouter>

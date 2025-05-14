@@ -2,7 +2,7 @@
   --gap-number: 10px;
   --lines-color: #f0f0f0;
   --purple: #593196;
-  --white-color: #f5f5f5;
+  --white-color: #fafafa;
   --text-color: #4b4b4b;
   --black-color: #151515;
   --font-size: 16px;
@@ -67,7 +67,7 @@ img {
 
 /* Structure */
 body {
-  background: #fff;
+  background: var(--white-color);
   color: var(--text-color);
   font-size: var(--font-size);
 }

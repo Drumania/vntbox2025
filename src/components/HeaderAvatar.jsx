@@ -51,10 +51,13 @@ export default function HeaderAvatar() {
   return (
     <div className="user-perfil position-relative" ref={menuRef}>
       <h4 className="user-perfil-name text-end text-truncate">
-        <Link to="/profile">{displayName}</Link>
+        <Link to={`/${profile?.username || "profile"}`}>{displayName}</Link>
       </h4>
 
-      <Link to="/profile" className="user-perfil-img">
+      <Link
+        to={`/${profile?.username || "profile"}`}
+        className="user-perfil-img"
+      >
         {avatarUrl ? (
           <img src={avatarUrl} alt="Avatar" />
         ) : (
