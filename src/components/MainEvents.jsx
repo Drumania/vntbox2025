@@ -13,7 +13,7 @@ const MainEvents = () => {
               <a
                 href="Event"
                 style={{
-                  backgroundImage: `url(${netflixCasadepapel})`
+                  backgroundImage: `url(${netflixCasadepapel})`,
                 }}
               >
                 Estreno la casa de papel 3er temporada
@@ -35,7 +35,7 @@ const MainEvents = () => {
               <a
                 href="Event"
                 style={{
-                  backgroundImage: `url(${ufc})`
+                  backgroundImage: `url(${ufc})`,
                 }}
               >
                 UFC Fight Night: Maia vs Usman

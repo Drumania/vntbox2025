@@ -71,6 +71,7 @@ body {
   background: var(--white-color) !important;
   color: var(--text-color);
   font-size: var(--font-size);
+  min-width: 900px;
 }
 
 h1 {
@@ -216,6 +217,7 @@ a:hover {
 }
 .dropdown-menu .dropdown-item {
   line-height: 40px;
+  padding-left: 20px;
 }
 
 /* Containers */
@@ -548,6 +550,42 @@ a:hover {
   border: 0;
 }
 
+.wrap-search {
+  position: relative;
+}
+
+.search-dropdown {
+  position: absolute;
+  background: #fff;
+  width: 100%;
+  top: 100%;
+  z-index: 10;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.dropdown-group strong {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 0.25rem 0;
+  color: #333;
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  text-decoration: underline;
+}
+
+.see-all {
+  font-weight: bold;
+  color: #007bff;
+}
 /* btn add */
 
 .avatar-add {
@@ -755,6 +793,9 @@ footer a:hover {
 }
 
 /*  Bootstrap update */
+.color-purple {
+  color: var(--purple);
+}
 
 .opacity-10 {
   opacity: 1;

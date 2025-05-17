@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
 
 export default function HeaderAvatar() {
-  const { user, profile, logout } = useAuth();
+  const { user, profile, logout, isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const menuRef = useRef();
@@ -77,6 +77,12 @@ export default function HeaderAvatar() {
           className="dropdown-menu show position-absolute end-0 mt-2 shadow-sm"
           style={{ minWidth: "150px" }}
         >
+          {isAdmin && (
+            <Link to="/admin" className="dropdown-item color-purple">
+              <i className="bi bi-wrench-adjustable-circle me-2"></i> Admin
+              Tools
+            </Link>
+          )}
           <Link className="dropdown-item" to="/settings">
             <i className="bi bi-gear me-2"></i> Settings
           </Link>

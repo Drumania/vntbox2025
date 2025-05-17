@@ -7,6 +7,8 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import AddEvent from "./pages/AddEvent";
 import Event from "./pages/Event";
+import SearchResults from "./pages/SearchResults";
+import AdminTools from "./pages/AdminTools";
 import Logout from "./pages/Logout";
 
 function App() {
@@ -20,7 +22,9 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/addevent" element={<AddEvent />} />
+          <Route path="/search" element={<SearchResults />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/admin" element={<AdminTools />} />
           <Route path="/:slug" element={<Profile />} />
           <Route path="/e/:slug" element={<Event />} />
         </Route>

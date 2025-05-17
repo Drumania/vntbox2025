@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { db, storage } from "../firebase";
+import { useAuth } from "@/context/AuthContext";
+import { db, storage } from "@/firebase";
 import {
   doc,
   getDoc,
@@ -84,7 +84,12 @@ export default function Settings() {
       <h2 className="mb-4">Account Settings</h2>
 
       <div className="mb-3">
-        <label className="form-label">Email</label>
+        <label className="form-label d-flex justify-content-between">
+          Email
+          {profile?.role === "admin" && (
+            <span className="text-muted"> Rol: {profile?.role}</span>
+          )}
+        </label>
         <input
           className="form-control"
           value={user?.email || ""}
@@ -116,6 +121,7 @@ export default function Settings() {
 
       <div className="mb-3">
         <label className="form-label">Display Name</label>
+
         <input
           className="form-control"
           value={displayName}

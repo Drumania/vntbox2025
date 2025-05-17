@@ -6,12 +6,19 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { auth, db, googleProvider } from "../firebase";
+import useGenerateKeywords from "../hooks/useGenerateKeywords";
 
 const AuthContext = createContext();
 
-// Convierte texto en slug único (ej: "martin brumana" => "martin-brumana")
+// Convierte texto en slug único
 const slugify = (text) =>
   text
     .toLowerCase()
@@ -39,41 +46,51 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const generateKeywords = useGenerateKeywords(); // HOOK usado correctamente aquí
 
-  // Carga el perfil extendido del usuario desde Firestore
   const loadProfile = async (uid) => {
     const ref = doc(db, "users", uid);
     const snap = await getDoc(ref);
     if (snap.exists()) setProfile(snap.data());
   };
 
-  // Crea el perfil en Firestore si aún no existe
-  const createProfileIfNeeded = async (firebaseUser) => {
-    const uid = firebaseUser.uid;
-    const ref = doc(db, "users", uid);
-    const snap = await getDoc(ref);
+  const createProfileIfNeeded = useCallback(
+    async (firebaseUser) => {
+      const uid = firebaseUser.uid;
+      const ref = doc(db, "users", uid);
+      const snap = await getDoc(ref);
 
-    if (!snap.exists()) {
-      const baseName =
-        firebaseUser.displayName || firebaseUser.email.split("@")[0];
-      const slug = await generateUniqueSlug(baseName);
+      if (!snap.exists()) {
+        const rawName =
+          firebaseUser.displayName ||
+          firebaseUser.email?.split("@")[0] ||
+          `usuario-${uid.slice(0, 6)}`;
 
-      const newProfile = {
-        display_name: baseName,
-        username: slug,
-        avatar_url: firebaseUser.photoURL || "",
-        bio: "",
-        created_at: Date.now(),
-      };
+        const safeDisplayName = rawName.trim() || `usuario-${uid.slice(0, 6)}`;
 
-      await setDoc(ref, newProfile);
-      setProfile(newProfile);
-    } else {
-      setProfile(snap.data());
-    }
-  };
+        // Si rawName no está definido o no es usable, generamos el fallback basado en UID
+        const baseSlug = slugify(safeDisplayName);
+        const uniqueSlug = await generateUniqueSlug(baseSlug);
 
-  // Escuchar cambios de autenticación
+        const newProfile = {
+          display_name: safeDisplayName,
+          username: uniqueSlug,
+          avatar_url: firebaseUser.photoURL || "",
+          bio: "",
+          role: "user",
+          created_at: Date.now(),
+          keywords: generateKeywords(safeDisplayName, uniqueSlug),
+        };
+
+        await setDoc(ref, newProfile);
+        setProfile(newProfile);
+      } else {
+        setProfile(snap.data());
+      }
+    },
+    [generateKeywords]
+  );
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -83,14 +100,12 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setProfile(null);
       }
-
       setLoading(false);
     });
 
     return () => unsub();
-  }, []);
+  }, [createProfileIfNeeded]);
 
-  // Funciones públicas
   const register = async (email, password) => {
     const { user } = await createUserWithEmailAndPassword(
       auth,
@@ -106,7 +121,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
-    await createProfileIfNeeded(firebaseUser);
+    const result = await signInWithPopup(auth, googleProvider);
+    await createProfileIfNeeded(result.user);
+    return result.user;
   };
 
   const logout = async () => {
@@ -116,6 +133,8 @@ export const AuthProvider = ({ children }) => {
   const refreshProfile = async () => {
     if (user) await loadProfile(user.uid);
   };
+
+  const isAdmin = profile?.role === "admin";
 
   return (
     <AuthContext.Provider
@@ -128,6 +147,7 @@ export const AuthProvider = ({ children }) => {
         loginWithGoogle,
         logout,
         refreshProfile,
+        isAdmin,
       }}
     >
       {children}
