@@ -18,7 +18,7 @@ import useGenerateKeywords from "../hooks/useGenerateKeywords";
 
 const AuthContext = createContext();
 
-// Convierte texto en slug único
+// Convierte texto en slug
 const slugify = (text) =>
   text
     .toLowerCase()
@@ -27,7 +27,7 @@ const slugify = (text) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-// Genera un slug único verificando en Firestore
+// Verifica que el slug sea único en Firestore (colección "users")
 const generateUniqueSlug = async (baseName) => {
   let slug = slugify(baseName);
   let suffix = 1;
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const generateKeywords = useGenerateKeywords(); // HOOK usado correctamente aquí
+  const generateKeywords = useGenerateKeywords();
 
   const loadProfile = async (uid) => {
     const ref = doc(db, "users", uid);
@@ -67,8 +67,6 @@ export const AuthProvider = ({ children }) => {
           `usuario-${uid.slice(0, 6)}`;
 
         const safeDisplayName = rawName.trim() || `usuario-${uid.slice(0, 6)}`;
-
-        // Si rawName no está definido o no es usable, generamos el fallback basado en UID
         const baseSlug = slugify(safeDisplayName);
         const uniqueSlug = await generateUniqueSlug(baseSlug);
 
@@ -148,6 +146,8 @@ export const AuthProvider = ({ children }) => {
         logout,
         refreshProfile,
         isAdmin,
+        generateUniqueSlug,
+        createProfileIfNeeded, // opcional si querés usarlo desde otros componentes
       }}
     >
       {children}

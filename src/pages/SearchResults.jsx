@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import UserThumb from "@/components/UserThumb";
+import EventThumb from "@/components/EventThumb";
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -73,13 +75,9 @@ const SearchResults = () => {
             <div className="mb-5">
               <h4>Users</h4>
               {users.length > 0 ? (
-                <ul className="list-unstyled">
+                <ul className="list-unstyled d-flex flex-wrap gap-3">
                   {users.map((user) => (
-                    <li key={user.id}>
-                      <Link to={`/${user.username}`}>
-                        {user.display_name || user.username}
-                      </Link>
-                    </li>
+                    <UserThumb key={user.id} user={user} />
                   ))}
                 </ul>
               ) : (
@@ -92,11 +90,9 @@ const SearchResults = () => {
             <div>
               <h4>Events</h4>
               {events.length > 0 ? (
-                <ul className="list-unstyled">
+                <ul className="list-unstyled d-flex flex-wrap gap-3">
                   {events.map((event) => (
-                    <li key={event.id}>
-                      <Link to={`/e/${event.slug}`}>{event.title}</Link>
-                    </li>
+                    <EventThumb key={event.id} event={event} />
                   ))}
                 </ul>
               ) : (

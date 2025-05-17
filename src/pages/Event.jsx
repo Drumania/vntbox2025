@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 
 import mapex from "../img/avatar/mapex.jpg";
-import mashinky from "../img/avatar/mashinky.png";
-import platzi from "../img/avatar/platzi.png";
-import ufc from "../img/avatar/ufc.jpg";
 
 export default function Event() {
   const { slug } = useParams();
+  const { user } = useAuth();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -20,7 +19,9 @@ export default function Event() {
         const q = query(collection(db, "events"), where("slug", "==", slug));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          setEvent(snap.docs[0].data());
+          const docSnap = snap.docs[0];
+          const data = docSnap.data();
+          setEvent({ id: docSnap.id, ...data }); // ✅ guardamos también el ID
         } else {
           setNotFound(true);
         }
@@ -41,8 +42,29 @@ export default function Event() {
       <div className="container py-4 text-danger">Evento no encontrado.</div>
     );
 
+  const isOwner = user?.uid === event.created_by;
+
   return (
     <main className="col-12">
+      {/* 🔝 ToolBar arriba de todo */}
+      <div className="container mb-3 d-flex justify-content-between align-items-center border-bottom pb-2">
+        <div>
+          <h3 className="mb-0">{event.title}</h3>
+          <small className="text-muted">
+            Organizado por: {event.owner_name}
+          </small>
+        </div>
+        {isOwner && (
+          <Link
+            to={`/edit-event/${event.slug}`} // usamos el slug, pero ya tenemos también el id
+            className="btn btn-outline-primary btn-sm"
+          >
+            ✏️ Editar evento
+          </Link>
+        )}
+      </div>
+
+      {/* Contenido visual del evento */}
       <div className="custom-box custom-box-vntbox p-3 mb-5">
         <div className="row">
           <div className="col-9">
@@ -111,8 +133,6 @@ export default function Event() {
             </div>
           </div>
 
-          {/* A partir de acá se puede seguir usando tu estructura sin cambios */}
-
           <div className="col-12 row py-5">
             <div className="col-3">
               <h2>Organiza</h2>
@@ -138,11 +158,10 @@ export default function Event() {
                   </Link>
                 </li>
               </ul>
-              {/* ...participa, galería, etc. */}
             </div>
             <div className="col-9 border-left">
               <p>{event.description}</p>
-              {/* Podés seguir con la galería, chekins, comentarios, etc. */}
+              {/* Podés seguir con galería, comentarios, etc. */}
             </div>
           </div>
         </div>

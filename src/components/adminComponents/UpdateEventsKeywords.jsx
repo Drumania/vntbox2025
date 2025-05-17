@@ -26,7 +26,9 @@ const UpdateEventsKeywords = () => {
         continue;
       }
 
-      const keywords = generateKeywords(title, slug);
+      const keywords = generateKeywords(title, slug).filter(
+        (k) => k.length > 2
+      );
 
       await updateDoc(doc(db, "events", eventDoc.id), {
         keywords,
@@ -43,7 +45,7 @@ const UpdateEventsKeywords = () => {
     <div className="p-3 border rounded bg-light mt-4">
       <h5>Actualizar eventos con keywords</h5>
       <button
-        className="btn btn-secondary"
+        className="btn btn-primary"
         onClick={updateAllEvents}
         disabled={updating}
       >

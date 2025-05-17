@@ -22,6 +22,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/addevent" element={<AddEvent />} />
+          <Route path="/edit-event/:slug" element={<AddEvent />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/admin" element={<AdminTools />} />

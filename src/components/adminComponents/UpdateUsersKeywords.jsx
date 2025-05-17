@@ -32,7 +32,9 @@ const UpdateUsersKeywords = () => {
       }
 
       try {
-        const keywords = generateKeywords(display_name, username);
+        const keywords = generateKeywords(display_name, username).filter(
+          (k) => k.length > 2
+        );
 
         await updateDoc(doc(db, "users", userDoc.id), {
           keywords,

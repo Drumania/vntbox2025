@@ -649,6 +649,10 @@ a:hover {
   width: 100%;
 }
 
+.event-medium {
+  min-width: 300px;
+}
+
 .event-medium a {
   height: 100px;
   width: 100%;
