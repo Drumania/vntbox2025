@@ -4,26 +4,26 @@ const UserThumb = ({ user }) => {
   return (
     <li className="avatar-user">
       <Link
-        to={`/${user.username}`}
+        to={`/${user.slug}`}
         className="event-in-cal"
         style={{
           backgroundImage: `url(${
             user.avatar_url || "/avatar_placeholder.png"
           })`,
         }}
-        alt={user.username}
+        alt={user.slug}
       >
-        {user.username}
+        {user.slug}
       </Link>
       <Link
-        to={`/${user.username}`}
+        to={`/${user.slug}`}
         className="avatar-name"
         title={user.display_name}
       >
         {user.display_name}
       </Link>
       <Link
-        to={`/${user.username}`}
+        to={`/${user.slug}`}
         className="avatar-next-event"
         title="Next event"
       >

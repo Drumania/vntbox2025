@@ -17,14 +17,14 @@ const UpdateUsersKeywords = () => {
 
     for (const userDoc of snap.docs) {
       const data = userDoc.data();
-      const { display_name, username } = data;
+      const { display_name, slug } = data;
 
       // Validación más estricta
       if (
         typeof display_name !== "string" ||
-        typeof username !== "string" ||
+        typeof slug !== "string" ||
         display_name.trim().length < 3 ||
-        username.trim().length < 3
+        slug.trim().length < 3
       ) {
         console.warn(`⛔ Usuario inválido: ${userDoc.id}`);
         setErrorUsers((prev) => [...prev, userDoc.id]);
@@ -32,7 +32,7 @@ const UpdateUsersKeywords = () => {
       }
 
       try {
-        const keywords = generateKeywords(display_name, username).filter(
+        const keywords = generateKeywords(display_name, slug).filter(
           (k) => k.length > 2
         );
 
@@ -40,7 +40,7 @@ const UpdateUsersKeywords = () => {
           keywords,
         });
 
-        console.log(`✅ Actualizado: ${username}`);
+        console.log(`✅ Actualizado: ${slug}`);
       } catch (err) {
         console.error(`⚠️ Error al actualizar ${userDoc.id}:`, err);
         setErrorUsers((prev) => [...prev, userDoc.id]);

@@ -120,7 +120,7 @@ const Search = () => {
               users.map((user) => (
                 <Link
                   key={user.id}
-                  to={`/${user.username}`}
+                  to={`/${user.slug}`}
                   className="d-flex align-items-center gap-3 mb-2 text-decoration-none text-dark hover-bg rounded px-2 py-1"
                 >
                   <img
