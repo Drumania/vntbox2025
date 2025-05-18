@@ -1,158 +1,142 @@
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import {
   createContext,
   useContext,
   useEffect,
   useState,
   useCallback,
 } from "react";
-import { auth, db, googleProvider } from "../firebase";
-import useGenerateKeywords from "../hooks/useGenerateKeywords";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "@/firebase"; // inicializas Firebase aquí
+import slugify from "slugify";
 
 const AuthContext = createContext();
+export const useAuth = () => useContext(AuthContext);
 
-// Convierte texto en slug
-const slugify = (text) =>
-  text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
-// Verifica que el slug sea único en Firestore (colección "users")
-const generateUniqueSlug = async (baseName) => {
-  let slug = slugify(baseName);
-  let suffix = 1;
-
-  while (true) {
-    const query = doc(db, "users", slug);
-    const exists = await getDoc(query);
-    if (!exists.exists()) break;
-    slug = `${slugify(baseName)}-${suffix++}`;
-  }
-
-  return slug;
-};
-
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null); // Firebase user
+  const [profile, setProfile] = useState(null); // Firestore doc
   const [loading, setLoading] = useState(true);
-  const generateKeywords = useGenerateKeywords();
 
-  const loadProfile = async (uid) => {
-    const ref = doc(db, "users", uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) setProfile(snap.data());
+  /* ---------- helpers ---------- */
+
+  const slugExists = async (slug) => {
+    const q = query(collection(db, "users"), where("slug", "==", slug));
+    const snap = await getDocs(q);
+    return !snap.empty;
   };
 
-  const createProfileIfNeeded = useCallback(
-    async (firebaseUser) => {
-      const uid = firebaseUser.uid;
-      const ref = doc(db, "users", uid);
-      const snap = await getDoc(ref);
+  const createProfileDoc = async (fbUser, slug = "") => {
+    const uid = fbUser.uid;
+    await setDoc(doc(db, "users", uid), {
+      uid,
+      display_name: fbUser.displayName || "",
+      email: fbUser.email,
+      slug,
+      avatar_url: fbUser.photoURL || "",
+      created_at: serverTimestamp(),
+      keywords: [],
+    });
+  };
 
-      if (!snap.exists()) {
-        const rawName =
-          firebaseUser.displayName ||
-          firebaseUser.email?.split("@")[0] ||
-          `usuario-${uid.slice(0, 6)}`;
+  const refreshProfile = useCallback(async (uid) => {
+    if (!uid) {
+      setProfile(null);
+      return;
+    }
+    const snap = await getDoc(doc(db, "users", uid));
+    setProfile(snap.exists() ? snap.data() : null);
+  }, []);
 
-        const safeDisplayName = rawName.trim() || `usuario-${uid.slice(0, 6)}`;
-        const baseSlug = slugify(safeDisplayName);
-        const uniqueSlug = await generateUniqueSlug(baseSlug);
-
-        const newProfile = {
-          display_name: safeDisplayName,
-          username: uniqueSlug,
-          avatar_url: firebaseUser.photoURL || "",
-          bio: "",
-          role: "user",
-          created_at: Date.now(),
-          keywords: generateKeywords(safeDisplayName, uniqueSlug),
-        };
-
-        await setDoc(ref, newProfile);
-        setProfile(newProfile);
-      } else {
-        setProfile(snap.data());
-      }
-    },
-    [generateKeywords]
-  );
+  /* ---------- auth listener ---------- */
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        await createProfileIfNeeded(firebaseUser);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
+    const auth = getAuth();
+    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      setUser(fbUser);
+      if (fbUser) await refreshProfile(fbUser.uid);
       setLoading(false);
     });
+    return unsub;
+  }, [refreshProfile]);
 
-    return () => unsub();
-  }, [createProfileIfNeeded]);
+  /* ---------- public actions ---------- */
 
-  const register = async (email, password) => {
-    const { user } = await createUserWithEmailAndPassword(
+  const signUp = async ({ email, password, displayName, slug }) => {
+    const auth = getAuth();
+    const { user: fbUser } = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
-    return user;
+
+    const cleanSlug = slugify(slug || displayName || email, { lower: true });
+    if (await slugExists(cleanSlug))
+      throw new Error("Slug already taken, choose another one.");
+
+    await createProfileDoc({ ...fbUser, displayName }, cleanSlug);
+    await refreshProfile(fbUser.uid);
   };
 
-  const login = async (email, password) => {
-    const { user } = await signInWithEmailAndPassword(auth, email, password);
-    return user;
+  const signIn = async ({ email, password }) => {
+    const auth = getAuth();
+    await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const loginWithGoogle = async () => {
-    const result = await signInWithPopup(auth, googleProvider);
-    await createProfileIfNeeded(result.user);
-    return result.user;
+  const signInWithGoogle = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    const { user: fbUser } = await signInWithPopup(auth, provider);
+
+    const snap = await getDoc(doc(db, "users", fbUser.uid));
+    if (!snap.exists()) await createProfileDoc(fbUser, "");
+    await refreshProfile(fbUser.uid);
   };
 
-  const logout = async () => {
-    await signOut(auth);
+  const addOrUpdateSlug = async (slug) => {
+    const clean = slugify(slug, { lower: true });
+    if (await slugExists(clean))
+      throw new Error("Slug already taken, choose another one.");
+    await updateDoc(doc(db, "users", user.uid), { slug: clean });
+    await refreshProfile(user.uid);
   };
 
-  const refreshProfile = async () => {
-    if (user) await loadProfile(user.uid);
-  };
+  const logout = () => signOut(getAuth());
 
-  const isAdmin = profile?.role === "admin";
+  /* ---------- value ---------- */
+
+  const value = {
+    user,
+    profile,
+    loading,
+    signUp,
+    signIn,
+    signInWithGoogle,
+    addOrUpdateSlug,
+    logout,
+  };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        profile,
-        loading,
-        register,
-        login,
-        loginWithGoogle,
-        logout,
-        refreshProfile,
-        isAdmin,
-        generateUniqueSlug,
-        createProfileIfNeeded, // opcional si querés usarlo desde otros componentes
-      }}
-    >
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => useContext(AuthContext);
+}

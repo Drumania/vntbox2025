@@ -7,7 +7,7 @@ const useGenerateKeywords = () => {
     const addKeywords = (text) => {
       if (!text) return;
       const str = text.toLowerCase();
-      for (let i = 1; i <= str.length; i++) {
+      for (let i = 3; i <= str.length; i++) {
         keywords.add(str.slice(0, i));
       }
     };

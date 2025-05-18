@@ -3,11 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   doc,
   updateDoc,
-  addDoc,
-  collection,
+  setDoc,
+  getDoc,
   getDocs,
-  query,
-  where,
+  collection,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase";
@@ -17,15 +16,19 @@ import useGenerateKeywords from "../hooks/useGenerateKeywords";
 
 export default function AddEvent() {
   const { slug } = useParams();
-  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const generateKeywords = useGenerateKeywords();
   const isEditing = !!slug;
 
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [slugError, setSlugError] = useState(false);
+
   const [form, setForm] = useState({
     title: "",
+    slug: "",
     description: "",
     date: "",
     time: "",
@@ -39,6 +42,7 @@ export default function AddEvent() {
     featured: false,
     priority: 0,
   });
+
   const [tagInput, setTagInput] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [errors, setErrors] = useState({});
@@ -48,7 +52,7 @@ export default function AddEvent() {
       const snap = await getDocs(collection(db, "categories"));
       const data = snap.docs.map((doc) => ({
         ...doc.data(),
-        slug: doc.id, // ← esto asegura que tengas el ID aunque no esté como campo
+        slug: doc.id,
       }));
       setCategories(data.sort((a, b) => a.order - b.order));
     };
@@ -56,33 +60,39 @@ export default function AddEvent() {
 
     const loadEvent = async () => {
       if (!isEditing) return;
-      const q = query(collection(db, "events"), where("slug", "==", slug));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const data = snap.docs[0].data();
+      const ref = doc(db, "events", slug);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
         setForm({
-          title: data.title || "",
-          description: data.description || "",
-          date: data.date || "",
-          time: data.time || "",
-          location: data.location || "",
-          category: data.category || "",
-          tags: data.tags || [],
-          external_link: data.external_link || "",
-          status: data.status || "activo",
-          visibility: data.visibility || "public",
-          image_url: data.image_url || "",
-          featured: data.featured || false,
-          priority: data.priority || 0,
+          ...data,
+          slug: snap.id,
         });
       }
     };
     loadEvent();
   }, [slug, isEditing]);
 
+  // Valida si el slug ya existe (en vivo)
+  useEffect(() => {
+    if (isEditing || !form.slug) return;
+    const checkSlug = async () => {
+      const ref = doc(db, "events", form.slug);
+      const snap = await getDoc(ref);
+      setSlugError(snap.exists());
+    };
+    checkSlug();
+  }, [form.slug, isEditing]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (name === "title" && !isEditing) {
+        updated.slug = slugify(value, { lower: true, strict: true });
+      }
+      return updated;
+    });
   };
 
   const handleFileChange = (e) => {
@@ -111,31 +121,27 @@ export default function AddEvent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || slugError) return;
 
     setLoading(true);
+    setMessage("");
 
     try {
       const imageUrl = await uploadImage();
       const keywords = generateKeywords(form.title, form.location);
 
       if (isEditing) {
-        const q = query(collection(db, "events"), where("slug", "==", slug));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          const ref = snap.docs[0].ref;
-          await updateDoc(ref, {
-            ...form,
-            image_url: imageUrl,
-            keywords,
-          });
-          navigate(`/e/${slug}`);
-        }
-      } else {
-        const newSlug = slugify(form.title, { lower: true, strict: true });
-        await addDoc(collection(db, "events"), {
+        const ref = doc(db, "events", slug);
+        await updateDoc(ref, {
           ...form,
-          slug: newSlug,
+          image_url: imageUrl,
+          keywords,
+        });
+        navigate(`/e/${slug}`);
+      } else {
+        const newRef = doc(db, "events", form.slug);
+        await setDoc(newRef, {
+          ...form,
           created_by: user.uid,
           user_id: user.uid,
           owner_name: profile?.display_name || "Anónimo",
@@ -143,10 +149,11 @@ export default function AddEvent() {
           image_url: imageUrl,
           keywords,
         });
-        navigate(`/e/${newSlug}`);
+        navigate(`/e/${form.slug}`);
       }
     } catch (error) {
       console.error("Error al guardar evento:", error);
+      setMessage("❌ Error al guardar evento. " + error.message);
     } finally {
       setLoading(false);
     }
@@ -155,6 +162,8 @@ export default function AddEvent() {
   return (
     <div className="container py-4">
       <h2>{isEditing ? "Editar Evento" : "Crear Nuevo Evento"}</h2>
+      {message && <div className="alert alert-danger">{message}</div>}
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Título</label>
@@ -170,6 +179,49 @@ export default function AddEvent() {
             <small className="text-danger">{errors.title}</small>
           )}
         </div>
+
+        {!isEditing && (
+          <div className="form-group mt-2">
+            <label>Slug (URL)</label>
+            <div className="input-group">
+              <input
+                type="text"
+                name="slug"
+                className={`form-control ${slugError ? "is-invalid" : ""}`}
+                value={form.slug}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    slug: slugify(e.target.value, {
+                      lower: true,
+                      strict: true,
+                    }),
+                  }))
+                }
+              />
+              <div className="input-group-append">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      slug: slugify(prev.title, { lower: true, strict: true }),
+                    }))
+                  }
+                >
+                  🔁
+                </button>
+              </div>
+            </div>
+            {slugError && (
+              <small className="text-danger">Este slug ya está en uso.</small>
+            )}
+            {!slugError && form.slug && (
+              <small className="text-muted">URL final: /e/{form.slug}</small>
+            )}
+          </div>
+        )}
 
         <div className="form-group">
           <label>Descripción</label>
@@ -269,7 +321,7 @@ export default function AddEvent() {
             {form.tags.map((tag, index) => (
               <span
                 key={index}
-                className="badge badge-primary mr-2"
+                className="badge badge-primary text-muted mr-2"
                 onClick={() =>
                   setForm((prev) => ({
                     ...prev,
@@ -316,7 +368,7 @@ export default function AddEvent() {
         <button
           type="submit"
           className="btn btn-success mt-3"
-          disabled={loading}
+          disabled={loading || slugError}
         >
           {loading
             ? "Guardando..."

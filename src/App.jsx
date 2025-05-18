@@ -10,24 +10,63 @@ import Event from "./pages/Event";
 import SearchResults from "./pages/SearchResults";
 import AdminTools from "./pages/AdminTools";
 import Logout from "./pages/Logout";
+import RequireSlug from "./pages/RequireSlug";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
+          {/* 🌐 Rutas públicas */}
+          <Route
+            path="/"
+            element={
+              <RequireSlug>
+                <Home />
+              </RequireSlug>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/addevent" element={<AddEvent />} />
-          <Route path="/edit-event/:slug" element={<AddEvent />} />
-          <Route path="/search" element={<SearchResults />} />
           <Route path="/logout" element={<Logout />} />
-          <Route path="/admin" element={<AdminTools />} />
-          <Route path="/:slug" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />{" "}
+          {/* 👈 accesible siempre */}
+          <Route path="/search" element={<SearchResults />} />
           <Route path="/e/:slug" element={<Event />} />
+          <Route path="/:slug" element={<Profile />} />
+          {/* 🔐 Rutas protegidas por slug */}
+          <Route
+            path="/profile"
+            element={
+              <RequireSlug>
+                <Profile />
+              </RequireSlug>
+            }
+          />
+          <Route
+            path="/addevent"
+            element={
+              <RequireSlug>
+                <AddEvent />
+              </RequireSlug>
+            }
+          />
+          <Route
+            path="/edit-event/:slug"
+            element={
+              <RequireSlug>
+                <AddEvent />
+              </RequireSlug>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireSlug>
+                <AdminTools />
+              </RequireSlug>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

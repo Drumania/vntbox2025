@@ -55,7 +55,7 @@ const UpdateUsersKeywords = () => {
     <div className="p-3 border rounded bg-light">
       <h5>Actualizar usuarios con keywords</h5>
       <button
-        className="btn btn-primary"
+        className="btn btn-primary my-3"
         onClick={updateAllUsers}
         disabled={updating}
       >

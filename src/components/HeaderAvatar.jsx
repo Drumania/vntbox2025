@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import AuthModal from "./AuthModal";
+import { useAuth } from "@/context/AuthContext";
+import LoginModal from "@/components/LoginModal";
 
 export default function HeaderAvatar() {
-  const { user, profile, logout, isAdmin } = useAuth();
+  const { user, profile, logout, isAdmin, needsCompleteProfile } = useAuth();
   const [open, setOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const menuRef = useRef();
@@ -32,10 +32,11 @@ export default function HeaderAvatar() {
     return (first + second).toUpperCase();
   }
 
+  // 🟡 SIN LOGIN
   if (!user) {
     return (
       <>
-        <div className="text-end">
+        <div className="text-end me-3">
           <button
             className="btn btn-outline-dark btn-sm"
             onClick={() => setShowAuth(true)}
@@ -43,13 +44,20 @@ export default function HeaderAvatar() {
             Login / Register
           </button>
         </div>
-        <AuthModal show={showAuth} onClose={() => setShowAuth(false)} />
+        <LoginModal
+          show={showAuth}
+          onClose={() => {
+            // 👇 solo cerrá si ya completó el perfil
+            if (!needsCompleteProfile) setShowAuth(false);
+          }}
+        />
       </>
     );
   }
 
+  // 🟢 LOGUEADO
   return (
-    <div className="user-perfil position-relative" ref={menuRef}>
+    <div className="user-perfil position-relative me-3" ref={menuRef}>
       <h4 className="user-perfil-name text-end text-truncate">
         <Link to={`/${profile?.username || "profile"}`}>{displayName}</Link>
       </h4>
@@ -89,9 +97,9 @@ export default function HeaderAvatar() {
           <Link className="dropdown-item" to="/addevent">
             <i className="bi bi-plus-circle me-2"></i> Add Event
           </Link>
-          <button className="dropdown-item text-danger" onClick={logout}>
+          <Link className="dropdown-item text-danger" to="/logout">
             <i className="bi bi-box-arrow-right me-2"></i> Logout
-          </button>
+          </Link>
         </div>
       )}
     </div>

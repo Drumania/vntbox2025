@@ -4,18 +4,16 @@ import HeaderAvatar from "./HeaderAvatar";
 
 const Header = () => {
   return (
-    <nav className="row mb-5">
-      <Link to="/" className="col-3 logo">
+    <nav className="mb-5">
+      <Link to="/" className="logo">
         <img src="/logo.png" alt="vntbox" />
       </Link>
 
-      <div className="col-5 row no-gutters">
+      <div className="row no-gutters">
         <Search />
       </div>
 
-      <div className="col-4">
-        <HeaderAvatar />
-      </div>
+      <HeaderAvatar />
     </nav>
   );
 };
