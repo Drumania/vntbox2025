@@ -52,53 +52,61 @@ const SearchResults = () => {
   }, [term, type]);
 
   if (!term) {
-    return <p className="text-center mt-5">No search term provided.</p>;
+    return (
+      <p className="text-center mt-5 text-muted">No search term provided.</p>
+    );
   }
 
   if (term.length < 3) {
     return (
-      <p className="text-center mt-5">Escribí al menos 3 letras para buscar.</p>
+      <p className="text-center mt-5 text-muted">
+        Escribí al menos 3 letras para buscar.
+      </p>
     );
   }
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">
-        Results for "<span className="text-primary">{term}</span>"
+      <h2 className="fw-bold mb-4">
+        Search Results for <span className="text-primary">"{term}"</span>
       </h2>
 
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-center text-muted">Loading...</p>
       ) : (
         <>
           {(!type || type === "users") && (
-            <div className="mb-5">
-              <h4>Users</h4>
+            <section className="mb-5">
+              <h5 className="mb-3">Users</h5>
               {users.length > 0 ? (
-                <ul className="list-unstyled d-flex flex-wrap gap-3">
+                <ul className="list-unstyled row gx-4 gy-4">
                   {users.map((user) => (
-                    <UserThumb key={user.id} user={user} />
+                    <li key={user.id} className="col-md-6 col-12">
+                      <UserThumb user={user} />
+                    </li>
                   ))}
                 </ul>
               ) : (
-                <p>No users found.</p>
+                <p className="text-muted">No users found.</p>
               )}
-            </div>
+            </section>
           )}
 
           {(!type || type === "events") && (
-            <div>
-              <h4>Events</h4>
+            <section>
+              <h5 className="mb-3">Events</h5>
               {events.length > 0 ? (
-                <ul className="list-unstyled d-flex flex-wrap gap-3">
+                <ul className="list-unstyled row gx-4 gy-4">
                   {events.map((event) => (
-                    <EventThumb key={event.id} event={event} />
+                    <li key={event.id} className="col-md-6 col-12">
+                      <EventThumb event={event} />
+                    </li>
                   ))}
                 </ul>
               ) : (
-                <p>No events found.</p>
+                <p className="text-muted">No events found.</p>
               )}
-            </div>
+            </section>
           )}
         </>
       )}

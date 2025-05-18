@@ -1,227 +1,117 @@
-import { useState, useEffect } from "react";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useState } from "react";
 import { db, storage } from "@/firebase";
-import useGenerateKeywords from "@/hooks/useGenerateKeywords";
+import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import slugify from "slugify";
-import { useAuth } from "@/context/AuthContext";
-
-const generateRandomPassword = () =>
-  Math.random().toString(36).slice(-8) +
-  "-" +
-  Math.random().toString(36).slice(-4);
+import { v4 as uuidv4 } from "uuid";
 
 export default function CreateUserManual() {
-  const { isAdmin } = useAuth();
-  const [form, setForm] = useState({
-    display_name: "",
-    password: "",
-    role: "user",
-  });
-  const [avatarFile, setAvatarFile] = useState(null);
+  const [displayName, setDisplayName] = useState("");
   const [slug, setSlug] = useState("");
-  const [slugError, setSlugError] = useState(false);
-  const [checkingSlug, setCheckingSlug] = useState(false);
-  const [generated, setGenerated] = useState(null);
-  const [message, setMessage] = useState("");
+  const [avatarFile, setAvatarFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const generateKeywords = useGenerateKeywords();
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    const newSlug = slugify(form.display_name, { lower: true, strict: true });
-    setSlug(newSlug);
-  }, [form.display_name]);
-
-  useEffect(() => {
-    const checkSlug = async () => {
-      if (!slug || slug.length < 3) {
-        setSlugError(true);
-        return;
-      }
-      setCheckingSlug(true);
-      const snap = await getDoc(doc(db, "usernames", slug));
-      setSlugError(snap.exists());
-      setCheckingSlug(false);
-    };
-
-    if (slug) checkSlug();
-  }, [slug]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleSlugChange = (value) => {
+    const generated = slugify(value, { lower: true });
+    setSlug(generated);
   };
 
-  const handleFileChange = (e) => {
-    setAvatarFile(e.target.files[0]);
-  };
-
-  const handleGeneratePassword = () => {
-    const newPass = generateRandomPassword();
-    setForm((prev) => ({ ...prev, password: newPass }));
-  };
-
-  const uploadAvatar = async () => {
-    if (!avatarFile) return "";
-    const uniqueName = `${Date.now()}-${avatarFile.name}`;
-    const avatarRef = ref(storage, `avatars/${uniqueName}`);
-    await uploadBytes(avatarRef, avatarFile);
-    return await getDownloadURL(avatarRef);
-  };
-
-  const handleCreate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-    setGenerated(null);
 
     try {
-      if (!form.password || form.password.length < 6) {
-        throw new Error("La contraseña debe tener al menos 6 caracteres");
+      // 1. Validar unicidad del slug
+      const slugQuery = query(
+        collection(db, "users"),
+        where("slug", "==", slug)
+      );
+      const slugSnap = await getDocs(slugQuery);
+      if (!slug || slugSnap.size > 0) {
+        setMessage("❌ Slug ya en uso o inválido.");
+        setLoading(false);
+        return;
       }
 
-      if (slugError) {
-        throw new Error("El slug ya está en uso");
+      // 2. Subir avatar si hay
+      let avatarUrl = "";
+      if (avatarFile) {
+        const fileRef = ref(storage, `avatars/${uuidv4()}`);
+        await uploadBytes(fileRef, avatarFile);
+        avatarUrl = await getDownloadURL(fileRef);
       }
 
-      const avatar_url = await uploadAvatar();
-      const keywords = generateKeywords(form.display_name, slug);
-
-      // 1. Guardar en /users/{slug}
-      await setDoc(doc(db, "users", slug), {
-        display_name: form.display_name,
-        username: slug,
-        avatar_url,
+      // 3. Crear documento en Firestore
+      await addDoc(collection(db, "users"), {
+        display_name: displayName,
+        slug,
+        avatar_url: avatarUrl,
+        created_at: new Date(),
+        role: "guest",
+        email: null,
         bio: "",
-        role: form.role,
-        created_at: Date.now(),
-        keywords,
-        reserved: true,
-        manual_password: form.password,
-        auth_uid: null,
+        social_links: {},
       });
 
-      // 2. Registrar el slug
-      await setDoc(doc(db, "usernames", slug), {
-        uid: null,
-        reserved: true,
-        created_by: "admin",
-        created_at: Date.now(),
-      });
-
-      setGenerated({ slug, password: form.password });
-      setForm({ display_name: "", password: "", role: "user" });
+      setMessage("✅ Usuario creado correctamente.");
+      setDisplayName("");
+      setSlug("");
       setAvatarFile(null);
     } catch (err) {
-      console.error("Error al crear perfil:", err);
-      setMessage("❌ " + err.message);
+      console.error(err);
+      setMessage("❌ Error al crear el usuario.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isAdmin) return null;
-
   return (
-    <details className="my-4 border rounded bg-light">
-      <summary className="p-3 fw-bold">
-        Crear nueva cuenta manual (reservada)
-      </summary>
-      <div className="p-3">
-        <form onSubmit={handleCreate}>
-          <div className="form-group mb-3">
-            <label>Nombre para mostrar</label>
-            <input
-              type="text"
-              name="display_name"
-              className={`form-control ${slugError ? "is-invalid" : ""}`}
-              style={{ width: 250 }}
-              value={form.display_name}
-              onChange={handleChange}
-              required
-            />
-            {checkingSlug && (
-              <small className="text-muted">Verificando slug…</small>
-            )}
-            {!slugError && slug && (
-              <small className="text-success">Slug: /{slug}</small>
-            )}
-            {slugError && (
-              <small className="text-danger">Este slug ya está en uso.</small>
-            )}
-          </div>
+    <div className="container mt-4" style={{ maxWidth: "500px" }}>
+      <h3 className="mb-3">Crear usuario manual</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label className="form-label">Nombre para mostrar</label>
+          <input
+            type="text"
+            className="form-control"
+            value={displayName}
+            onChange={(e) => {
+              setDisplayName(e.target.value);
+              handleSlugChange(e.target.value);
+            }}
+            required
+          />
+        </div>
 
-          <div className="form-group mb-3">
-            <label>Contraseña</label>
-            <div className="d-flex">
-              <input
-                type="text"
-                name="password"
-                className="form-control"
-                style={{ width: 200 }}
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={handleGeneratePassword}
-                title="Generar aleatoria"
-              >
-                🔁
-              </button>
-            </div>
-          </div>
+        <div className="mb-3">
+          <label className="form-label">Slug (username público)</label>
+          <input
+            type="text"
+            className="form-control"
+            value={slug}
+            onChange={(e) => setSlug(slugify(e.target.value, { lower: true }))}
+            required
+          />
+        </div>
 
-          <div className="form-group mb-3">
-            <label>Foto de perfil (opcional)</label>
-            <input
-              type="file"
-              accept="image/*"
-              style={{ width: 300 }}
-              onChange={handleFileChange}
-              className="form-control"
-            />
-          </div>
+        <div className="mb-3">
+          <label className="form-label">Avatar</label>
+          <input
+            type="file"
+            className="form-control"
+            accept="image/*"
+            onChange={(e) => setAvatarFile(e.target.files[0])}
+          />
+        </div>
 
-          <div className="form-group mb-3">
-            <label>Rol</label>
-            <select
-              name="role"
-              className="form-control"
-              value={form.role}
-              onChange={handleChange}
-              style={{ width: 200 }}
-            >
-              <option value="user">user</option>
-              <option value="admin">admin</option>
-            </select>
-          </div>
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? "Creando..." : "Crear usuario"}
+        </button>
 
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading || slugError}
-          >
-            {loading ? "Guardando..." : "Crear cuenta"}
-          </button>
-        </form>
-
-        {generated && (
-          <div className="alert alert-info mt-3">
-            ✅ Cuenta creada: <code>/{generated.slug}</code>
-            <br />
-            Contraseña: <code>{generated.password}</code>
-            <br />
-            <small>
-              Podés pasársela al usuario para que reclame la cuenta.
-            </small>
-          </div>
-        )}
-
-        {message && <div className="mt-2 text-danger">{message}</div>}
-      </div>
-    </details>
+        {message && <p className="mt-3">{message}</p>}
+      </form>
+    </div>
   );
 }
