@@ -89,11 +89,13 @@ export function AuthProvider({ children }) {
     await refreshProfile(res.user.uid);
   };
 
+  const isAdmin = profile?.role === "admin";
+
   const logout = () => signOut(auth);
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, login, signUp, loginWithGoogle, logout }}
+      value={{ user, profile, login, signUp, loginWithGoogle, logout, isAdmin }}
     >
       {!loading && children}
     </AuthContext.Provider>

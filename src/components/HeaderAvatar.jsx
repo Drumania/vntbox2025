@@ -52,20 +52,35 @@ export default function HeaderAvatar() {
   // 🟢 LOGUEADO
   return (
     <div className="user-perfil position-relative me-3" ref={menuRef}>
-      <h4 className="user-perfil-name text-end text-truncate">
-        <Link to={`/${profile?.slug || "profile"}`}>{displayName}</Link>
+      <h4 className="user-perfil-name text-end text-truncate mb-0">
+        <Link
+          to={`/${profile?.slug || "profile"}`}
+          className="text-decoration-none text-dark"
+        >
+          {displayName}
+        </Link>
       </h4>
 
-      <Link to={`/${profile?.slug || "profile"}`} className="user-perfil-img">
+      <Link
+        to={`/${profile?.slug || "profile"}`}
+        className="user-perfil-img d-inline-block rounded-circle overflow-hidden"
+        style={{ width: "40px", height: "40px", backgroundColor: "#eee" }}
+      >
         {avatarUrl ? (
-          <img src={avatarUrl} alt="Avatar" />
+          <img
+            src={avatarUrl}
+            alt="Avatar"
+            className="w-100 h-100 object-fit-cover"
+          />
         ) : (
-          <span className="placeholder">{getInitials(displayName)}</span>
+          <div className="d-flex align-items-center justify-content-center h-100 fw-bold text-uppercase text-muted">
+            {getInitials(displayName)}
+          </div>
         )}
       </Link>
 
       <button
-        className="btn p-0 border-0 bg-transparent user-perfil-dots"
+        className="btn p-0 border-0 bg-transparent user-perfil-dots ms-2"
         onClick={() => setOpen((prev) => !prev)}
       >
         <i className="bi bi-three-dots-vertical fs-5"></i>
@@ -74,10 +89,10 @@ export default function HeaderAvatar() {
       {open && (
         <div
           className="dropdown-menu show position-absolute end-0 mt-2 shadow-sm"
-          style={{ minWidth: "150px" }}
+          style={{ minWidth: "180px", zIndex: 1050 }}
         >
           {isAdmin && (
-            <Link to="/admin" className="dropdown-item color-purple">
+            <Link to="/admin" className="dropdown-item text-primary">
               <i className="bi bi-wrench-adjustable-circle me-2"></i> Admin
               Tools
             </Link>

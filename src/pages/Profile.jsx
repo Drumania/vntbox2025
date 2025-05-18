@@ -17,7 +17,7 @@ export default function Profile() {
   useEffect(() => {
     const loadProfileAndEvents = async () => {
       try {
-        const q = query(collection(db, "users"), where("username", "==", slug));
+        const q = query(collection(db, "users"), where("slug", "==", slug));
         const snap = await getDocs(q);
 
         if (snap.empty) {
@@ -74,7 +74,7 @@ export default function Profile() {
 
           <div className="col-12 row no-gutters">
             <h1>{profile.display_name}</h1>
-            <h2 className="col-10">/{profile.username}</h2>
+            <h2 className="col-10">/{profile.slug}</h2>
             <div className="col-2 text-right">
               <a
                 href="#!"
@@ -89,37 +89,77 @@ export default function Profile() {
               Next event in 3 days
             </small>
           </div>
-          <p className="my-3">
-            {profile.bio}
-            <br />
-            {profile.social_links?.linkedin && (
-              <a
-                href={profile.social_links.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {profile.social_links.linkedin}
-              </a>
-            )}
-          </p>
+          {/* BIO y redes sociales */}
+          {profile.bio && (
+            <div className="my-3">
+              {profile.bio && <p className="mb-2">{profile.bio}</p>}
+            </div>
+          )}
 
-          <div className="btn-group" role="group">
-            <button type="button" className="btn">
-              <i className="fab fa-instagram"></i>
-            </button>
-            <button type="button" className="btn">
-              <i className="fab fa-facebook-square"></i>
-            </button>
-            <button type="button" className="btn">
-              <i className="fab fa-youtube-square"></i>
-            </button>
-            <button type="button" className="btn">
-              <i className="fab fa-twitch"></i>
-            </button>
-            <button type="button" className="btn">
-              <i className="fab fa-twitter-square"></i>
-            </button>
-          </div>
+          {profile.social_links && (
+            <div className="d-flex flex-wrap gap-2 mt-3">
+              {profile.social_links.instagram && (
+                <a
+                  href={profile.social_links.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-outline-secondary"
+                >
+                  Instagram
+                </a>
+              )}
+              {profile.social_links.facebook && (
+                <a
+                  href={profile.social_links.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-outline-secondary"
+                >
+                  Facebook
+                </a>
+              )}
+              {profile.social_links.youtube && (
+                <a
+                  href={profile.social_links.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-outline-secondary"
+                >
+                  YouTube
+                </a>
+              )}
+              {profile.social_links.twitch && (
+                <a
+                  href={profile.social_links.twitch}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-outline-secondary"
+                >
+                  Twitch
+                </a>
+              )}
+              {profile.social_links.twitter && (
+                <a
+                  href={profile.social_links.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-outline-secondary"
+                >
+                  Twitter
+                </a>
+              )}
+              {profile.social_links.linkedin && (
+                <a
+                  href={profile.social_links.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-outline-secondary"
+                >
+                  LinkedIn
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         <WhoAdd />
