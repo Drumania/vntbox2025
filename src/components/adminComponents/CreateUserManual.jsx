@@ -68,50 +68,61 @@ export default function CreateUserManual() {
   };
 
   return (
-    <div className="container mt-4" style={{ maxWidth: "500px" }}>
-      <h3 className="mb-3">Crear usuario manual</h3>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Nombre para mostrar</label>
-          <input
-            type="text"
-            className="form-control"
-            value={displayName}
-            onChange={(e) => {
-              setDisplayName(e.target.value);
-              handleSlugChange(e.target.value);
-            }}
-            required
-          />
-        </div>
+    <details
+      className="my-4 border rounded bg-light"
+      style={{ background: "#f8f9fa" }}
+    >
+      <summary className="p-3 fw-bold">
+        Agregar y gestionar categorías de Eventos
+      </summary>
 
-        <div className="mb-3">
-          <label className="form-label">Slug (username público)</label>
-          <input
-            type="text"
-            className="form-control"
-            value={slug}
-            onChange={(e) => setSlug(slugify(e.target.value, { lower: true }))}
-            required
-          />
-        </div>
+      <div className="container my-4">
+        <h3 className="mb-3">Crear usuario manual</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3" style={{ maxWidth: "300px" }}>
+            <label className="form-label">Nombre para mostrar</label>
+            <input
+              type="text"
+              className="form-control"
+              value={displayName}
+              onChange={(e) => {
+                setDisplayName(e.target.value);
+                handleSlugChange(e.target.value);
+              }}
+              required
+            />
+          </div>
 
-        <div className="mb-3">
-          <label className="form-label">Avatar</label>
-          <input
-            type="file"
-            className="form-control"
-            accept="image/*"
-            onChange={(e) => setAvatarFile(e.target.files[0])}
-          />
-        </div>
+          <div className="mb-3" style={{ maxWidth: "300px" }}>
+            <label className="form-label">Slug (username público)</label>
+            <input
+              type="text"
+              className="form-control"
+              value={slug}
+              onChange={(e) =>
+                setSlug(slugify(e.target.value, { lower: true }))
+              }
+              required
+            />
+          </div>
 
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? "Creando..." : "Crear usuario"}
-        </button>
+          <div className="mb-3" style={{ maxWidth: "300px" }}>
+            <label className="form-label">Avatar</label>
+            <input
+              type="file"
+              className="form-control"
+              accept="image/*"
+              onChange={(e) => setAvatarFile(e.target.files[0])}
+            />
+          </div>
 
-        {message && <p className="mt-3">{message}</p>}
-      </form>
-    </div>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Creando..." : "Crear usuario"}
+          </button>
+
+          {message && <p className="mt-3">{message}</p>}
+        </form>
+      </div>
+    </details>
   );
 }
