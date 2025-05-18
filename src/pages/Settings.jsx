@@ -1,85 +1,40 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import slugify from "slugify";
+// src/pages/Settings.jsx
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import slugify from "slugify";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/firebase";
 
 export default function Settings() {
-  const { user, profile, addOrUpdateSlug, logout } = useAuth();
-  const [displayName, setDisplayName] = useState(profile?.display_name || "");
+  const { user, profile } = useAuth();
   const [slug, setSlug] = useState(profile?.slug || "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!user) navigate("/");
-  }, [user, navigate]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
+  const save = async () => {
     try {
       const clean = slugify(slug, { lower: true });
-      await addOrUpdateSlug(clean);
-      navigate("/");
+      await updateDoc(doc(db, "users", user.uid), { slug: clean });
+      setSuccess("Saved!");
     } catch (err) {
       setError(err.message);
-    } finally {
-      setSaving(false);
     }
   };
 
   return (
-    <div className="container py-4">
-      <h2 className="mb-4">Profile Settings</h2>
-
-      <form onSubmit={handleSubmit} style={{ maxWidth: 480 }}>
-        <div className="mb-3">
-          <label className="form-label">Email (read-only)</label>
-          <input
-            className="form-control"
-            value={profile?.email || ""}
-            disabled
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Display name</label>
-          <input
-            className="form-control"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Username (slug)</label>
-          <input
-            className="form-control"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            required
-          />
-          <div className="form-text">
-            Public URL: <code>vntbox.com/{slugify(slug, { lower: true })}</code>
-          </div>
-        </div>
-
-        {error && <div className="alert alert-danger">{error}</div>}
-
-        <button className="btn btn-primary w-100 mb-2" disabled={saving}>
-          Save changes
-        </button>
-
-        <button
-          type="button"
-          className="btn btn-outline-danger w-100"
-          onClick={logout}
-        >
-          Log out
-        </button>
-      </form>
+    <div className="container mt-4" style={{ maxWidth: 480 }}>
+      <h3>Edit Profile</h3>
+      <input
+        type="text"
+        className="form-control mb-2"
+        value={slug}
+        onChange={(e) => setSlug(e.target.value)}
+      />
+      <button className="btn btn-primary w-100" onClick={save}>
+        Save Slug
+      </button>
+      {success && <div className="alert alert-success mt-2">{success}</div>}
+      {error && <div className="alert alert-danger mt-2">{error}</div>}
     </div>
   );
 }

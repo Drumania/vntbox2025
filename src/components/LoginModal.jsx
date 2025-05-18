@@ -1,209 +1,131 @@
-import { useState, useEffect } from "react";
-import ReactDOM from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
-export default function LoginModal({ show, onHide }) {
-  const { signUp, signIn, signInWithGoogle, addOrUpdateSlug, profile } =
-    useAuth();
-  const navigate = useNavigate();
-
-  const [step, setStep] = useState(1); // 1 = auth, 2 = slug
+export default function LoginModal({ show, onClose }) {
+  const { login, signUp, loginWithGoogle } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({ email: "", password: "", username: "" });
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  /* Detectar cuando el perfil ya está disponible */
-  useEffect(() => {
-    if (!show || !profile) return;
-
-    if (!profile.slug || profile.slug === "") {
-      setStep(2);
-    } else {
-      onHide();
-      navigate("/"); // o redirigir a donde quieras
-    }
-  }, [profile, show, onHide, navigate]);
-
-  /* Bloquear scroll del body cuando está abierto */
-  useEffect(() => {
-    if (show) document.body.classList.add("modal-open");
-    else document.body.classList.remove("modal-open");
-    const esc = (e) => e.key === "Escape" && onHide();
-    document.addEventListener("keydown", esc);
-    return () => {
-      document.body.classList.remove("modal-open");
-      document.removeEventListener("keydown", esc);
-    };
-  }, [show, onHide]);
-
-  const handleAuth = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      if (isLogin) {
-        await signIn({ email: form.email, password: form.password });
-      } else {
-        await signUp({
-          email: form.email,
-          password: form.password,
-          displayName: form.username,
-          slug: form.username,
-        });
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    setError(null);
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleSaveSlug = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      await addOrUpdateSlug(form.username);
-      onHide();
-      navigate("/settings");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const AuthStep = (
-    <form onSubmit={handleAuth}>
-      <h5 className="mb-3">{isLogin ? "Log In" : "Create Account"}</h5>
-
-      {!isLogin && (
-        <input
-          className="form-control mb-2"
-          type="text"
-          placeholder="Username (slug)"
-          value={form.username}
-          onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-          required
-        />
-      )}
-
-      <input
-        className="form-control mb-2"
-        type="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-        required
-      />
-
-      <input
-        className="form-control mb-3"
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-        required
-      />
-
-      {error && <div className="alert alert-danger">{error}</div>}
-
-      <button className="btn btn-primary w-100 mb-2" disabled={loading}>
-        {isLogin ? "Log In" : "Sign Up"}
-      </button>
-
-      <button
-        type="button"
-        className="btn btn-outline-secondary w-100 mb-3"
-        onClick={handleGoogle}
-        disabled={loading}
-      >
-        Continue with Google
-      </button>
-
-      <div className="text-center">
-        {isLogin ? (
-          <>
-            Need an account?{" "}
-            <button
-              type="button"
-              className="btn btn-link p-0"
-              onClick={() => setIsLogin(false)}
-            >
-              Sign up
-            </button>
-          </>
-        ) : (
-          <>
-            Already have an account?{" "}
-            <button
-              type="button"
-              className="btn btn-link p-0"
-              onClick={() => setIsLogin(true)}
-            >
-              Log in
-            </button>
-          </>
-        )}
-      </div>
-    </form>
-  );
-
-  const SlugStep = (
-    <form onSubmit={handleSaveSlug}>
-      <h5 className="mb-3">Choose your username</h5>
-      <input
-        className="form-control mb-3"
-        type="text"
-        placeholder="Username (slug)"
-        value={form.username}
-        onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-        required
-      />
-      {error && <div className="alert alert-danger">{error}</div>}
-      <button className="btn btn-primary w-100" disabled={loading}>
-        Save & Go to Settings
-      </button>
-    </form>
-  );
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    confirm: "",
+    slug: "",
+  });
+  const [error, setError] = useState("");
 
   if (!show) return null;
 
-  return ReactDOM.createPortal(
-    <>
-      {/* backdrop */}
-      <div className="modal-backdrop fade show"></div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      if (isLogin) {
+        await login(form.email, form.password);
+        onClose();
+      } else {
+        if (form.password !== form.confirm)
+          throw new Error("Passwords don't match");
+        if (!form.slug) throw new Error("Slug is required");
+        await signUp({
+          email: form.email,
+          password: form.password,
+          slug: form.slug,
+        });
+        onClose();
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
-      {/* modal */}
+  return (
+    <div
+      className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+      style={{
+        backgroundColor: "rgba(255,255,255,0.95)",
+        zIndex: 1050,
+      }}
+      onClick={onClose}
+    >
       <div
-        className="modal fade show d-block"
-        tabIndex="-1"
-        role="dialog"
-        onClick={onHide}
-        style={{ zIndex: 1055 }}
+        className="bg-white border rounded shadow p-4"
+        style={{ width: "100%", maxWidth: "400px" }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div
-          className="modal-dialog modal-dialog-centered"
-          role="document"
-          onClick={(e) => e.stopPropagation()}
+        <h5 className="mb-3 text-center">
+          {isLogin ? "Login" : "Create Account"}
+        </h5>
+
+        <form onSubmit={handleSubmit}>
+          {!isLogin && (
+            <input
+              type="text"
+              placeholder="Username (slug)"
+              className="form-control mb-2"
+              value={form.slug}
+              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+              required
+            />
+          )}
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="form-control mb-2"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="form-control mb-2"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+          />
+
+          {!isLogin && (
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              className="form-control mb-3"
+              value={form.confirm}
+              onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+              required
+            />
+          )}
+
+          {error && <div className="alert alert-danger">{error}</div>}
+
+          <button type="submit" className="btn btn-primary w-100 mb-2">
+            {isLogin ? "Login" : "Register"}
+          </button>
+        </form>
+
+        <button
+          className="btn btn-outline-dark w-100 mb-3"
+          onClick={async () => {
+            try {
+              await loginWithGoogle();
+              onClose();
+            } catch (err) {
+              setError(err.message);
+            }
+          }}
         >
-          <div className="modal-content p-3">
-            {step === 1 ? AuthStep : SlugStep}
-          </div>
+          Continue with Google
+        </button>
+
+        <div className="text-center">
+          <button
+            className="btn btn-link p-0"
+            onClick={() => setIsLogin(!isLogin)}
+          >
+            {isLogin ? "Need an account? Register" : "Have an account? Login"}
+          </button>
         </div>
       </div>
-    </>,
-    document.body
+    </div>
   );
 }

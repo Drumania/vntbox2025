@@ -18,14 +18,7 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           {/* 🌐 Rutas públicas */}
-          <Route
-            path="/"
-            element={
-              <RequireSlug>
-                <Home />
-              </RequireSlug>
-            }
-          />
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/logout" element={<Logout />} />
