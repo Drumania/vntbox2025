@@ -72,12 +72,9 @@ export default function CreateUserManual() {
       className="my-4 border rounded bg-light"
       style={{ background: "#f8f9fa" }}
     >
-      <summary className="p-3 fw-bold">
-        Agregar y gestionar categorías de Eventos
-      </summary>
+      <summary className="p-3 fw-bold">Crear usuario manual</summary>
 
       <div className="container my-4">
-        <h3 className="mb-3">Crear usuario manual</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-3" style={{ maxWidth: "300px" }}>
             <label className="form-label">Nombre para mostrar</label>

@@ -7,7 +7,7 @@ const EventThumb = ({ event }) => {
         to={`/e/${event.slug}`}
         style={{
           backgroundImage: `url(${
-            event.cover_url || "/event_placeholder.png"
+            event.image_url || "/event_placeholder.png"
           })`,
         }}
       >

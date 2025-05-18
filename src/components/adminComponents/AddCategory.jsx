@@ -98,7 +98,6 @@ export default function AddCategory() {
       </summary>
 
       <div className="container p-3">
-        <h5>Agregar categoría</h5>
         <form
           onSubmit={handleSubmit}
           className="d-flex align-items-center form-inline my-3"
