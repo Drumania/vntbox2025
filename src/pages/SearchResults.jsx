@@ -213,7 +213,7 @@ const SearchResults = () => {
                   </li>
                 )}
                 {filters.selectedDate && (
-                  <li className="list-inline-item badge bg-warning text-dark me-2">
+                  <li className="list-inline-item badge bg-warning  me-2">
                     Fecha: {filters.selectedDate}
                   </li>
                 )}

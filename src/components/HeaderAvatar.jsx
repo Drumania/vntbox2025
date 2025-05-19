@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import LoginModal from "@/components/LoginModal";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function HeaderAvatar() {
   const { user, profile, logout, isAdmin } = useAuth();
+  const { darkMode, toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const menuRef = useRef();
@@ -55,7 +57,7 @@ export default function HeaderAvatar() {
       <h4 className="user-perfil-name text-end text-truncate mb-0">
         <Link
           to={`/${profile?.slug || "profile"}`}
-          className="text-decoration-none text-dark"
+          className="text-decoration-none"
         >
           {displayName}
         </Link>
@@ -97,6 +99,19 @@ export default function HeaderAvatar() {
               Tools
             </Link>
           )}
+          <li>
+            <button
+              className="dropdown-item d-flex justify-content-between align-items-center"
+              onClick={toggleTheme}
+            >
+              Modo oscuro
+              <i
+                className={`bi ${
+                  darkMode ? "bi-moon-stars-fill" : "bi-sun"
+                } ms-2`}
+              ></i>
+            </button>
+          </li>
           <Link className="dropdown-item" to="/settings">
             <i className="bi bi-gear me-2"></i> Settings
           </Link>

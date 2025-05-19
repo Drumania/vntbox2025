@@ -2,6 +2,7 @@
   --gap-number: 10px;
   --lines-color: #f0f0f0;
   --purple: #593196;
+  --white-pure-color: #ffffff;
   --white-color: #fafafa;
   --text-color: #4b4b4b;
   --black-color: #151515;
@@ -9,6 +10,20 @@
   --font-family: "Roboto", sans-serif;
   --border-radius: 15px;
   --box-shadow: 10px 10px 40px 1px rgba(0, 0, 0, 0.21);
+}
+
+.dark {
+  --lines-color: #1b1b1b;
+  --white-pure-color: #000;
+  --white-color: #151515;
+  --text-color: #fafafa;
+  --black-color: #151515;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* Reset */
@@ -78,7 +93,7 @@ h1 {
   font-size: 24px;
   text-transform: uppercase;
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
   line-height: 30px;
 }
 
@@ -86,7 +101,7 @@ h2 {
   font-size: 20px;
   text-transform: uppercase;
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
   line-height: 40px;
 }
 
@@ -98,14 +113,14 @@ h3 {
 
 h4 {
   font-size: 16px;
-  color: #333;
+  color: var(--text-color);
 }
 
 nav {
   height: 80px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--text-color);
   flex-direction: row;
   justify-content: space-between;
 }
@@ -128,13 +143,13 @@ a:hover {
 }
 
 .btn-primary {
-  color: #fff;
+  color: var(--white-pure-color);
   background-color: #593196;
   border-color: #593196;
 }
 
 .btn-primary:hover {
-  color: #fff;
+  color: var(--white-pure-color);
   background-color: #482879;
   border-color: #422470;
 }
@@ -159,13 +174,13 @@ a:hover {
   height: 100%;
 
   & a {
-    color: #333;
+    color: var(--text-color);
     text-decoration: none;
     opacity: 1;
   }
 
   & a:hover {
-    color: #333;
+    color: var(--text-color);
     text-decoration: none;
     opacity: 0.8;
   }
@@ -203,7 +218,7 @@ a:hover {
   & .user-perfil-dots {
     font-size: 22px;
     display: block;
-    color: #333 !important;
+    color: var(--black-color) !important;
     text-align: center;
     cursor: pointer;
     opacity: 1;
@@ -226,7 +241,7 @@ a:hover {
 /* Containers */
 
 .custom-box-height-full {
-  background: #fff;
+  background: var(--white-pure-color);
   border-radius: 20px;
   box-shadow: 0px 0px 7px 1px rgb(0 0 0 / 2%);
 }
@@ -248,6 +263,7 @@ a:hover {
 }
 
 .calendar-tools > div button {
+  color: var(--text-color);
   font-size: 16px;
   display: block;
   padding: 0 8px;
@@ -324,7 +340,7 @@ a:hover {
   display: block;
   height: 110px;
   padding: 5px;
-  background-color: #fafafa;
+  background-color: var(--white-pure-color);
 }
 
 .day.finde {
@@ -409,7 +425,7 @@ a:hover {
   height: 29px;
   width: 29px;
   background: var(--purple);
-  color: #fff;
+  color: var(--white-pure-color);
   border-radius: 50%;
   display: block;
   cursor: pointer;
@@ -423,7 +439,7 @@ a:hover {
 
 .event-in-cal-more:hover,
 .event-in-cal:hover {
-  color: #fff;
+  color: var(--white-pure-color);
   opacity: 0.9;
   text-decoration: none;
 }
@@ -485,7 +501,7 @@ a:hover {
 /* event box :) */
 
 .custom-box-vntbox {
-  background: #fff;
+  background: var(--white-pure-color);
   border-radius: 20px;
   -webkit-box-shadow: 0px 0px 15px 1px rgba(0, 0, 0, 0.05);
   -moz-box-shadow: 0px 0px 15px 1px rgba(0, 0, 0, 0.05);
@@ -506,7 +522,7 @@ a:hover {
 
 .avatar-user .avatar-name {
   font-size: 14px;
-  color: #333;
+  color: var(--text-color);
   display: block;
   line-height: 13px;
   opacity: 1;
@@ -541,12 +557,12 @@ a:hover {
 }
 
 .hover-bg:hover {
-  background-color: #f8f9fa;
+  background-color: var(--white-color);
   transition: background 0.2s ease;
 }
 
 .search-input {
-  background-color: #fff;
+  background-color: var(--white-pure-color);
   border: 0;
   padding: 5px 10px;
   height: 34px;
@@ -565,7 +581,7 @@ a:hover {
 
 .search-dropdown {
   position: absolute;
-  background: #fff;
+  background: var(--white-pure-color);
   width: 100%;
   top: 100%;
   z-index: 10;
@@ -583,7 +599,7 @@ a:hover {
 .dropdown-item {
   display: block;
   padding: 0.25rem 0;
-  color: #333;
+  color: var(--text-color);
   text-decoration: none;
 }
 
@@ -610,8 +626,8 @@ a:hover {
 }
 
 .avatar-add:hover {
-  border: 1px solid #fff;
-  color: #fff;
+  border: 1px solid var(--white-pure-color);
+  color: var(--white-pure-color);
   background: var(--purple);
   text-decoration: none;
   border-radius: 3px;
@@ -619,8 +635,8 @@ a:hover {
 
 .avatar-added {
   float: right;
-  border: 1px solid #fff;
-  color: #fff;
+  border: 1px solid var(--white-pure-color);
+  color: var(--white-pure-color);
   background: var(--purple);
   border-radius: 3px;
   margin-top: -13px;
@@ -632,7 +648,7 @@ a:hover {
 .avatar-added:hover {
   border: 1px solid var(--purple);
   color: var(--purple);
-  background: #fff;
+  background: var(--white-pure-color);
   text-decoration: none;
   border-radius: 3px;
 }
@@ -641,7 +657,7 @@ a:hover {
 
 .img-thumbnail-profile {
   padding: 0.25rem;
-  background-color: #fff;
+  background-color: var(--white-pure-color);
   border: 1px solid #ededed;
   max-width: 80%;
   height: auto;
@@ -649,7 +665,7 @@ a:hover {
 }
 
 .fa-redo-alt {
-  color: #333;
+  color: var(--text-color);
 }
 
 /* main events */
@@ -663,7 +679,7 @@ a:hover {
 }
 
 .event-medium a {
-  height: 200px;
+  height: 140px;
   width: 100%;
   background-size: contain;
   display: block;
@@ -729,7 +745,7 @@ a:hover {
 
 .chekins-more-content {
   background: var(--purple);
-  color: #fff;
+  color: var(--white-pure-color);
   display: block;
   cursor: pointer;
   text-align: center;
@@ -742,7 +758,7 @@ a:hover {
 
 .added-more-content {
   background: var(--purple);
-  color: #fff;
+  color: var(--white-pure-color);
   display: block;
   cursor: pointer;
   text-align: center;
@@ -865,19 +881,4 @@ footer a:hover {
   .week {
     grid-template-columns: unset;
   }
-}
-:root {
-  --background-color: #ffffff;
-  --text-color: #000000;
-}
-
-.dark {
-  --background-color: #1a1a1a;
-  --text-color: #ffffff;
-}
-
-body {
-  background-color: var(--background-color);
-  color: var(--text-color);
-  transition: background-color 0.3s, color 0.3s;
 }

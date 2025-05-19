@@ -121,7 +121,7 @@ const Search = () => {
                 <Link
                   key={user.id}
                   to={`/${user.slug}`}
-                  className="d-flex align-items-center gap-3 mb-2 text-decoration-none text-dark hover-bg rounded px-2 py-1"
+                  className="d-flex align-items-center gap-3 mb-2 text-decoration-none hover-bg rounded px-2 py-1"
                 >
                   <img
                     src={user.avatar_url || "/avatar_placeholder.png"}
@@ -159,7 +159,7 @@ const Search = () => {
                 <Link
                   key={event.id}
                   to={`/e/${event.slug}`}
-                  className="d-flex align-items-center gap-3 mb-2 text-decoration-none text-dark hover-bg rounded px-2 py-1"
+                  className="d-flex align-items-center gap-3 mb-2 text-decoration-none hover-bg rounded px-2 py-1"
                 >
                   <img
                     src={event.cover_url || "/event_placeholder.png"}
