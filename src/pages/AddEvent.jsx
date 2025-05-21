@@ -7,12 +7,14 @@ import {
   getDoc,
   getDocs,
   collection,
+  deleteDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import slugify from "slugify";
 import useGenerateKeywords from "../hooks/useGenerateKeywords";
+import Select from "react-select";
 
 export default function AddEvent() {
   const { slug } = useParams();
@@ -20,8 +22,10 @@ export default function AddEvent() {
   const { user, profile } = useAuth();
   const generateKeywords = useGenerateKeywords();
   const isEditing = !!slug;
+  const isAdmin = profile?.role === "admin";
 
   const [categories, setCategories] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [slugError, setSlugError] = useState(false);
@@ -41,6 +45,8 @@ export default function AddEvent() {
     image_url: "",
     featured: false,
     priority: 0,
+    owner_name: "",
+    user_id: "",
   });
 
   const [tagInput, setTagInput] = useState("");
@@ -58,6 +64,19 @@ export default function AddEvent() {
     };
     fetchCategories();
 
+    if (isAdmin) {
+      const fetchUsers = async () => {
+        const snap = await getDocs(collection(db, "users"));
+        const users = snap.docs.map((doc) => ({
+          value: doc.id,
+          label:
+            doc.data().display_name || doc.data().email || "Usuario sin nombre",
+        }));
+        setAllUsers(users);
+      };
+      fetchUsers();
+    }
+
     const loadEvent = async () => {
       if (!isEditing) return;
       const ref = doc(db, "events", slug);
@@ -73,7 +92,6 @@ export default function AddEvent() {
     loadEvent();
   }, [slug, isEditing]);
 
-  // Valida si el slug ya existe (en vivo)
   useEffect(() => {
     if (isEditing || !form.slug) return;
     const checkSlug = async () => {
@@ -130,25 +148,26 @@ export default function AddEvent() {
       const imageUrl = await uploadImage();
       const keywords = generateKeywords(form.title, form.location);
 
+      const eventData = {
+        ...form,
+        image_url: imageUrl,
+        keywords,
+        created_by: user.uid,
+        user_id: isAdmin && form.user_id ? form.user_id : user.uid,
+        owner_name:
+          isAdmin && form.owner_name
+            ? form.owner_name
+            : profile?.display_name || "Anónimo",
+        created_at: Date.now(),
+      };
+
       if (isEditing) {
         const ref = doc(db, "events", slug);
-        await updateDoc(ref, {
-          ...form,
-          image_url: imageUrl,
-          keywords,
-        });
+        await updateDoc(ref, eventData);
         navigate(`/e/${slug}`);
       } else {
         const newRef = doc(db, "events", form.slug);
-        await setDoc(newRef, {
-          ...form,
-          created_by: user.uid,
-          user_id: user.uid,
-          owner_name: profile?.display_name || "Anónimo",
-          created_at: Date.now(),
-          image_url: imageUrl,
-          keywords,
-        });
+        await setDoc(newRef, eventData);
         navigate(`/e/${form.slug}`);
       }
     } catch (error) {
@@ -164,7 +183,95 @@ export default function AddEvent() {
       <h2>{isEditing ? "Editar Evento" : "Crear Nuevo Evento"}</h2>
       {message && <div className="alert alert-danger">{message}</div>}
 
+      {isAdmin && (
+        <div className="alert alert-secondary mb-4">
+          <h5 className="mb-3">⚙️ Acciones de administrador</h5>
+
+          <div className="mb-3">
+            <label className="form-label">Usuario creador del evento</label>
+            <Select
+              options={allUsers}
+              placeholder="Buscar usuario..."
+              isClearable
+              value={allUsers.find((u) => u.value === form.user_id) || null}
+              onChange={(selected) => {
+                setForm((prev) => ({
+                  ...prev,
+                  user_id: selected?.value || "",
+                  owner_name: selected?.label || "",
+                }));
+              }}
+            />
+          </div>
+
+          <div className="d-flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="btn btn-warning"
+              onClick={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  status: prev.status === "activo" ? "pausado" : "activo",
+                }))
+              }
+            >
+              {form.status === "activo"
+                ? "⏸️ Pausar Evento"
+                : "▶️ Activar Evento"}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-outline-danger"
+              onClick={async () => {
+                const confirm = window.confirm(
+                  "¿Estás seguro que querés eliminar este evento?"
+                );
+                if (!confirm) return;
+                try {
+                  await deleteDoc(doc(db, "events", slug));
+                  navigate("/"); // o a una ruta tipo /admin/events
+                } catch (err) {
+                  console.error("Error al eliminar evento", err);
+                  alert("Error al eliminar el evento.");
+                }
+              }}
+            >
+              🗑️ Eliminar Evento
+            </button>
+          </div>
+
+          <div className="mt-3 text-muted small">
+            Slug: <strong>/e/{form.slug}</strong> — Fecha:{" "}
+            <strong>{form.date || "sin fecha"}</strong> — Estado:{" "}
+            <strong>{form.status}</strong>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
+        {/* {isAdmin && (
+          <div className="form-group">
+            <label>Usuario creador del evento</label>
+            <Select
+              options={allUsers}
+              placeholder="Buscar usuario..."
+              isClearable
+              value={allUsers.find((u) => u.value === form.user_id) || null}
+              onChange={(selected) => {
+                setForm((prev) => ({
+                  ...prev,
+                  user_id: selected?.value || "",
+                  owner_name: selected?.label || "",
+                }));
+              }}
+            />
+            <small className="form-text text-muted">
+              Este evento se publicará como si fuera de ese usuario.
+            </small>
+          </div>
+        )} */}
+
         <div className="form-group">
           <label>Título</label>
           <input

@@ -3,6 +3,8 @@
   --lines-color: #f0f0f0;
   --purple: #593196;
   --white-pure-color: #ffffff;
+  --white-semi-pure-color: #f9f9f9;
+  --white-semi-pure2-color: #f3f3f3;
   --white-color: #fafafa;
   --text-color: #4b4b4b;
   --black-color: #151515;
@@ -15,6 +17,8 @@
 .dark {
   --lines-color: #1b1b1b;
   --white-pure-color: #000;
+  --white-semi-pure-color: #222222;
+  --white-semi-pure2-color: #232323;
   --white-color: #151515;
   --text-color: #fafafa;
   --black-color: #151515;
@@ -239,6 +243,9 @@ a:hover {
 }
 
 /* Containers */
+.custom-box {
+  overflow: hidden;
+}
 
 .custom-box-height-full {
   background: var(--white-pure-color);
@@ -340,15 +347,19 @@ a:hover {
   display: block;
   height: 110px;
   padding: 5px;
-  background-color: var(--white-pure-color);
+  background-color: var(--white-semi-pure-color);
 }
 
 .day.finde {
-  background-color: #f3f3f3;
+  background-color: var(--white-semi-pure2-color);
 }
 
 .day.today {
   background-color: #9d5dff2e;
+}
+
+.dark .day.today {
+  background-color: #9e5dffa6;
 }
 
 .day-label {
