@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { db } from "../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  doc,
+  getDocs,
+  collection,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 
+import FollowButton from "@/components/FollowButton";
 import WhoAdd from "@/components/WhoAdd";
 import Footer from "@/components/Footer";
 import Calendar from "@/components/Calendar";
@@ -15,6 +23,8 @@ export default function Profile() {
   const [userEvents, setUserEvents] = useState([]);
 
   useEffect(() => {
+    let unsubscribeUser = null;
+
     const loadProfileAndEvents = async () => {
       try {
         const q = query(collection(db, "users"), where("slug", "==", slug));
@@ -27,12 +37,18 @@ export default function Profile() {
         }
 
         const userDoc = snap.docs[0];
-        const userData = userDoc.data();
         const userId = userDoc.id;
 
-        setProfile({ ...userData, uid: userId });
+        // Escuchar en vivo los cambios del perfil (followersCount, etc)
+        unsubscribeUser = onSnapshot(doc(db, "users", userId), (docSnap) => {
+          if (docSnap.exists()) {
+            const liveData = docSnap.data();
+            console.log({ ...liveData, uid: userId });
+            setProfile({ ...liveData, uid: userId });
+          }
+        });
 
-        // Cargar eventos del usuario
+        // Cargar eventos del usuario (una sola vez)
         const eventsQuery = query(
           collection(db, "events"),
           where("user_id", "==", userId)
@@ -49,6 +65,10 @@ export default function Profile() {
     };
 
     loadProfileAndEvents();
+
+    return () => {
+      if (unsubscribeUser) unsubscribeUser();
+    };
   }, [slug]);
 
   if (loading) return <div className="container py-5">Loading...</div>;
@@ -76,23 +96,34 @@ export default function Profile() {
             <h1>{profile.display_name}</h1>
             <h2 className="col-10">/{profile.slug}</h2>
             <div className="col-2 text-right">
-              <a
-                href="#!"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="avatar-added mt-2 mr-1"
-              >
-                added
-              </a>
+              <FollowButton targetUid={profile.uid} />
             </div>
+
+            <div className="col-12 d-flex gap-4 mt-2">
+              <div className="text-center">
+                <strong className="d-block text-dark">
+                  {profile.followersCount ?? 0}
+                </strong>
+                <small className="text-muted">Followers</small>
+              </div>
+
+              <div className="text-center">
+                <strong className="d-block text-dark">
+                  {profile.followingCount ?? 0}
+                </strong>
+                <small className="text-muted">Following</small>
+              </div>
+            </div>
+
             <small className="col-12 text-secondary mb-3">
               Next event in 3 days
             </small>
           </div>
+
           {/* BIO y redes sociales */}
           {profile.bio && (
             <div className="my-3">
-              {profile.bio && <p className="mb-2">{profile.bio}</p>}
+              <p className="mb-2">{profile.bio}</p>
             </div>
           )}
 

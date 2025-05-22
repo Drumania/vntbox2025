@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const Calendar = ({ events = [] }) => {
+const Calendar = ({ events = [], mode = "profile" }) => {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -32,36 +32,35 @@ const Calendar = ({ events = [] }) => {
     });
   };
 
-  // Preload images
   useEffect(() => {
     events.forEach((event) => {
       if (!loadedImages[event.slug]) {
         const img = new Image();
-        img.src = event.image_url;
+        const src =
+          mode === "home"
+            ? event.owner_avatar_url || "/avatar_placeholder.png"
+            : event.image_url;
+        img.src = src;
         img.onload = () => {
           setLoadedImages((prev) => ({ ...prev, [event.slug]: true }));
         };
       }
     });
-  }, [events]);
+  }, [events, mode]);
 
-  // Touch tooltip for mobile
   useEffect(() => {
     const handleClick = (e) => {
       const allEventElements = document.querySelectorAll(".event-in-cal");
-
       allEventElements.forEach((el) => {
         const tooltip = el.querySelector(".event-tooltip");
         if (!tooltip) return;
 
         if (el.contains(e.target)) {
-          // Si se hace clic dentro del evento, mostrar tooltip solo en ese
           allEventElements.forEach((otherEl) =>
             otherEl.classList.remove("show-tooltip")
           );
           el.classList.add("show-tooltip");
         } else {
-          // Si se hace clic fuera, ocultar
           el.classList.remove("show-tooltip");
         }
       });
@@ -89,10 +88,6 @@ const Calendar = ({ events = [] }) => {
                 {monthName} {year}
               </h2>
             </div>
-            {/* <div>
-              <i className="bi bi-grid me-2 opacity-75"></i>
-              <i className="bi bi-list opacity-50"></i>
-            </div> */}
           </div>
 
           <div className="calendar">
@@ -126,22 +121,61 @@ const Calendar = ({ events = [] }) => {
                           }`}
                           style={{
                             backgroundImage: loadedImages[event.slug]
-                              ? `url(${event.image_url})`
+                              ? mode === "home"
+                                ? `url(${
+                                    event.owner_avatar_url ||
+                                    "/avatar_placeholder.png"
+                                  })`
+                                : `url(${event.image_url})`
                               : "none",
                           }}
                         >
                           <div className="event-tooltip">
-                            <img src={event.image_url} alt={event.title} />
-                            <div>
-                              <strong>{event.title}</strong>
-                              <br />
-                              <Link
-                                to={`/e/${event.slug}`}
-                                className="btn btn-sm btn-outline-light mt-1"
-                              >
-                                Ver evento
-                              </Link>
-                            </div>
+                            {mode === "home" ? (
+                              <>
+                                <img
+                                  src={
+                                    event.owner_avatar_url ||
+                                    "/avatar_placeholder.png"
+                                  }
+                                  alt={event.owner_name}
+                                  className="rounded-circle mb-2"
+                                  width={60}
+                                  height={60}
+                                />
+                                <div>
+                                  <strong>{event.title}</strong>
+                                  <br />
+                                  <Link
+                                    to={`/e/${event.slug}`}
+                                    className="btn btn-sm btn-outline-light mt-1"
+                                  >
+                                    View event
+                                  </Link>
+                                  <br />
+                                  <Link
+                                    to={`/${event.owner_slug}`}
+                                    className="btn btn-sm btn-outline-light mt-1"
+                                  >
+                                    View profile
+                                  </Link>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <img src={event.image_url} alt={event.title} />
+                                <div>
+                                  <strong>{event.title}</strong>
+                                  <br />
+                                  <Link
+                                    to={`/e/${event.slug}`}
+                                    className="btn btn-sm btn-outline-light mt-1"
+                                  >
+                                    Ver evento
+                                  </Link>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       </li>
