@@ -132,38 +132,56 @@ const Calendar = ({ events = [], mode = "profile" }) => {
                         >
                           <div className="event-tooltip">
                             {mode === "home" ? (
-                              <>
-                                <img
-                                  src={
-                                    event.owner_avatar_url ||
-                                    "/avatar_placeholder.png"
-                                  }
-                                  alt={event.owner_name}
-                                  className="rounded-circle mb-2"
-                                  width={60}
-                                  height={60}
-                                />
-                                <div>
-                                  <strong>{event.title}</strong>
-                                  <br />
-                                  <Link
-                                    to={`/e/${event.slug}`}
-                                    className="btn btn-sm btn-outline-light mt-1"
-                                  >
-                                    View event
-                                  </Link>
-                                  <br />
+                              <div className="d-flex flex-column align-items-center text-center">
+                                {/* Avatar del usuario */}
+                                <div className="et-header">
+                                  <img
+                                    src={
+                                      event.owner_avatar_url ||
+                                      "/avatar_placeholder.png"
+                                    }
+                                    alt={event.owner_name}
+                                    className="rounded-circle mb-2"
+                                    width={40}
+                                    height={40}
+                                  />
                                   <Link
                                     to={`/${event.owner_slug}`}
-                                    className="btn btn-sm btn-outline-light mt-1"
+                                    className="et-owner"
                                   >
-                                    View profile
+                                    {event.owner_name}
                                   </Link>
                                 </div>
-                              </>
+                                {/* Imagen del evento */}
+                                <img
+                                  src={event.image_url}
+                                  alt={event.title}
+                                  className="img-fluid event rounded mb-1"
+                                  style={{
+                                    maxHeight: "100px",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                                <strong>{event.title}</strong>
+                                <Link
+                                  to={`/e/${event.slug}`}
+                                  className="btn btn-sm btn-outline-light mt-1"
+                                >
+                                  View event
+                                </Link>
+                              </div>
                             ) : (
-                              <>
-                                <img src={event.image_url} alt={event.title} />
+                              <div className="text-center">
+                                {/* Solo en modo profile */}
+                                <img
+                                  src={event.image_url}
+                                  alt={event.title}
+                                  className="img-fluid rounded mb-2"
+                                  style={{
+                                    maxHeight: "140px",
+                                    objectFit: "cover",
+                                  }}
+                                />
                                 <div>
                                   <strong>{event.title}</strong>
                                   <br />
@@ -174,7 +192,7 @@ const Calendar = ({ events = [], mode = "profile" }) => {
                                     Ver evento
                                   </Link>
                                 </div>
-                              </>
+                              </div>
                             )}
                           </div>
                         </div>
