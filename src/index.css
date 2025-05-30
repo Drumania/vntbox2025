@@ -1,13 +1,16 @@
 :root {
   --gap-number: 10px;
   --lines-color: #f0f0f0;
-  --purple: #593196;
-  --white-pure-color: #ffffff;
-  --white-semi-pure-color: #f9f9f9;
-  --white-semi-pure2-color: #f3f3f3;
+  --violet-color: #593196;
+  --violet-light-color: #9e2cf5;
+  --green-color: #6af52c;
+  --red-color: #f52c65;
   --white-color: #fafafa;
   --text-color: #4b4b4b;
   --black-color: #151515;
+  --white-pure-color: #ffffff;
+  --white-semi-pure-color: #f9f9f9;
+  --white-semi-pure2-color: #f3f3f3;
   --font-size: 14px;
   --font-family: "Roboto", sans-serif;
   --border-radius: 15px;
@@ -435,7 +438,7 @@ a:hover {
 .event-in-cal-more {
   height: 29px;
   width: 29px;
-  background: var(--purple);
+  background: var(--violet-color);
   color: var(--white-pure-color);
   border-radius: 50%;
   display: block;
@@ -688,8 +691,8 @@ a:hover {
 
 .avatar-add {
   float: right;
-  border: 1px solid var(--purple);
-  color: var(--purple);
+  border: 1px solid var(--violet-color);
+  color: var(--violet-color);
   background: var(--white-pure-color);
   border-radius: 3px;
   margin-top: -13px;
@@ -701,9 +704,9 @@ a:hover {
 
 .avatar-added {
   float: right;
-  border: 1px solid var(--purple);
+  border: 1px solid var(--violet-color);
   color: var(--white-pure-color);
-  background: var(--purple);
+  background: var(--violet-color);
   border-radius: 3px;
   margin-top: -13px;
   font-size: 11px;
@@ -714,7 +717,7 @@ a:hover {
 .avatar-add:hover {
   opacity: 0.8;
   text-decoration: none;
-  color: var(--purple);
+  color: var(--violet-color);
 }
 
 .avatar-added:hover {
@@ -814,7 +817,7 @@ a:hover {
 }
 
 .chekins-more-content {
-  background: var(--purple);
+  background: var(--violet-color);
   color: var(--white-pure-color);
   display: block;
   cursor: pointer;
@@ -827,7 +830,7 @@ a:hover {
 }
 
 .added-more-content {
-  background: var(--purple);
+  background: var(--violet-color);
   color: var(--white-pure-color);
   display: block;
   cursor: pointer;
@@ -894,10 +897,61 @@ footer a:hover {
   text-decoration: underline;
 }
 
-/*  Bootstrap update */
-.color-purple {
-  color: var(--purple);
+/* misc */
+.color-white {
+  color: var(--white-color);
 }
+.bk-white {
+  background-color: var(--white-color);
+}
+
+.color-violet {
+  color: var(--violet-color);
+}
+.bk-violet {
+  background-color: var(--violet-color);
+}
+
+.color-violet-light {
+  color: var(--violet-light-color);
+}
+.bk-violet-light {
+  background-color: var(--violet-light-color);
+}
+
+.color-green {
+  color: var(--green-color);
+}
+.bk-green {
+  background-color: var(--green-color);
+}
+
+.color-red {
+  color: var(--red-color);
+}
+.bk-red {
+  background-color: var(--red-color);
+}
+
+.color-black {
+  color: var(--black-color);
+}
+.bk-black {
+  background-color: var(--black-color);
+}
+
+.font-primary {
+  font-family: "Roboto", sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.font-secondary {
+  font-family: "Arial", sans-serif;
+  font-style: italic;
+}
+
+/*  Bootstrap update */
 
 .opacity-10 {
   opacity: 1;

@@ -1,17 +1,17 @@
-import React from "react";
+import WhoAdd from "@/components/WhoAdd";
 import netflixCasadepapel from "../img/events/netflix-casadepapel.png";
 import ufc from "../img/events/ufc.jpg";
 
-const MainEvents = () => {
+export default function Discover() {
   return (
     <div className="custom-box pt-3">
       <div className="row">
         <div className="col-12">
-          <h2>Main events</h2>
+          <h2>Discover</h2>
           <ul className="main-events">
             <li className="event-medium">
               <a
-                href="Event"
+                href="/event"
                 style={{
                   backgroundImage: `url(${netflixCasadepapel})`,
                 }}
@@ -24,16 +24,17 @@ const MainEvents = () => {
                   <strong>19</strong>
                   Jul
                 </div>
-                <div className="event-title pl-2 col-10">
+                <div className="event-title pl-2 col-10 text-truncate">
                   Estreno la casa de papel 3er tem...
                   <br />
                   <small>0:00</small>
                 </div>
               </div>
             </li>
+
             <li className="event-medium">
               <a
-                href="Event"
+                href="/event"
                 style={{
                   backgroundImage: `url(${ufc})`,
                 }}
@@ -56,8 +57,7 @@ const MainEvents = () => {
           </ul>
         </div>
       </div>
+      <WhoAdd />
     </div>
   );
-};
-
-export default MainEvents;
+}

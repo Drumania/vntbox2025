@@ -23,7 +23,7 @@ const WhoAdd = () => {
                 to={"/Profile"}
                 className="event-in-cal"
                 style={{
-                  backgroundImage: `url(${ufc})`
+                  backgroundImage: `url(${ufc})`,
                 }}
                 alt="ufc"
               >
@@ -42,7 +42,7 @@ const WhoAdd = () => {
                 to={"/Profile"}
                 className="event-in-cal"
                 style={{
-                  backgroundImage: `url(${mashinky})`
+                  backgroundImage: `url(${mashinky})`,
                 }}
                 alt="mashinky"
               >
@@ -61,7 +61,7 @@ const WhoAdd = () => {
                 to={"/Profile"}
                 className="event-in-cal"
                 style={{
-                  backgroundImage: `url(${platzi})`
+                  backgroundImage: `url(${platzi})`,
                 }}
                 alt="platzi"
               >
@@ -81,7 +81,7 @@ const WhoAdd = () => {
                 to={"/Profile"}
                 className="event-in-cal"
                 style={{
-                  backgroundImage: `url(${overwatch})`
+                  backgroundImage: `url(${overwatch})`,
                 }}
                 alt="overwatch"
               >

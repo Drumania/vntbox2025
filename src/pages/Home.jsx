@@ -1,5 +1,5 @@
-import MainEvents from "@/components/MainEvents";
-import WhoAdd from "@/components/WhoAdd";
+import Discover from "@/components/Discover";
+
 import Footer from "@/components/Footer";
 import CalendarHome from "@/components/CalendarHome";
 
@@ -9,8 +9,7 @@ export default function Home() {
       <div className="container">
         <div className="row">
           <aside className="col-3 d-none d-lg-block">
-            <MainEvents />
-            <WhoAdd />
+            <Discover />
             <Footer />
           </aside>
 
