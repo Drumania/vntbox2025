@@ -1,105 +1,53 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { db } from "@/firebase";
+import UserThumb from "./UserThumb";
+import { getNextEventInfoByUser } from "@/utils/getNextEventInfoByUser";
 
-import mashinky from "../img/avatar/mashinky.png";
-import overwatch from "../img/avatar/overwatch.png";
-import platzi from "../img/avatar/platzi.png";
-import ufc from "../img/avatar/ufc.jpg";
+export default function WhoAdd({ max = 3 }) {
+  const [users, setUsers] = useState([]);
 
-const WhoAdd = () => {
+  useEffect(() => {
+    (async () => {
+      try {
+        const q = query(
+          collection(db, "users"),
+          orderBy("created_at", "desc"),
+          limit(max)
+        );
+        const snap = await getDocs(q);
+        const list = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+        // 🔁 Agregamos info del próximo evento a cada user
+        const enriched = await Promise.all(
+          list.map(async (user) => {
+            console.log("➡️ Procesando user:", user.id); // 👈 AÑADILO ACÁ
+            const next_event_text = await getNextEventInfoByUser(user.id);
+            return { ...user, next_event_text };
+          })
+        );
+
+        setUsers(enriched);
+      } catch (err) {
+        console.error("Error loading users:", err);
+      }
+    })();
+  }, [max]);
+
   return (
     <div className="custom-box mb-4">
-      <div className="row">
-        <div className="col-12">
-          <h2>
-            Who add?
-            <a href="#!">
-              <i className="fas fa-redo-alt float-right mt-2" />
-            </a>
-          </h2>
-          <ul>
-            <li className="avatar-user">
-              <Link
-                to={"/Profile"}
-                className="event-in-cal"
-                style={{
-                  backgroundImage: `url(${ufc})`,
-                }}
-                alt="ufc"
-              >
-                ufc
-              </Link>
-              <Link to={"/Profile"} className="avatar-name" title="ufc">
-                UFC
-              </Link>
-              <Link to={"/Profile"} className="avatar-next-event" title="ufc">
-                next event in 1 day
-              </Link>
-              <button className="avatar-add">add</button>
-            </li>
-            <li className="avatar-user">
-              <Link
-                to={"/Profile"}
-                className="event-in-cal"
-                style={{
-                  backgroundImage: `url(${mashinky})`,
-                }}
-                alt="mashinky"
-              >
-                mashinky
-              </Link>
-              <Link to={"/Profile"} className="avatar-name" alt="ufc">
-                Mashinky
-              </Link>
-              <Link to={"/Profile"} className="avatar-next-event" alt="ufc">
-                next event in 1 month
-              </Link>
-              <button className="avatar-add">add</button>
-            </li>
-            <li className="avatar-user">
-              <Link
-                to={"/Profile"}
-                className="event-in-cal"
-                style={{
-                  backgroundImage: `url(${platzi})`,
-                }}
-                alt="platzi"
-              >
-                platzi
-              </Link>
-              <Link to={"/Profile"} className="avatar-name" alt="ufc">
-                Platzi
-              </Link>
-              <Link to={"/Profile"} className="avatar-next-event" alt="ufc">
-                next event in 14 hours
-              </Link>
-              <button className="avatar-add">add</button>
-            </li>
-
-            <li className="avatar-user">
-              <Link
-                to={"/Profile"}
-                className="event-in-cal"
-                style={{
-                  backgroundImage: `url(${overwatch})`,
-                }}
-                alt="overwatch"
-              >
-                overwatch
-              </Link>
-              <Link to={"/Profile"} className="avatar-name" alt="ufc">
-                Overwatch
-              </Link>
-              <Link to={"/Profile"} className="avatar-next-event" alt="ufc">
-                next event in 17 days
-              </Link>
-              <button className="avatar-add">add</button>
-            </li>
-          </ul>
-        </div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2 className="h5 mb-0">Who add?</h2>
+        <button className="btn btn-sm btn-link p-0">
+          <i className="fas fa-redo-alt" />
+        </button>
       </div>
+
+      <ul className="m-0 p-0 list-unstyled">
+        {users.map((user) => (
+          <UserThumb key={user.id} user={user} />
+        ))}
+      </ul>
     </div>
   );
-};
-
-export default WhoAdd;
+}

@@ -539,6 +539,17 @@ a:hover {
 
 .avatar-user {
   margin: 20px 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.avatar-link-wrapper {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  width: 70%;
 }
 
 .avatar-user .event-in-cal {
@@ -563,11 +574,13 @@ a:hover {
 
 .avatar-user:hover {
   opacity: 0.8;
+  text-decoration: none;
 }
 
 .avatar-user .event-in-cal:hover,
 .avatar-user .avatar-name:hover,
-.avatar-user .avatar-next-event:hover {
+.avatar-user .avatar-next-event:hover,
+.avatar-link-wrapper:hover {
   text-decoration: none;
 }
 
@@ -797,6 +810,29 @@ a:hover {
 .event-details .event-title small {
   font-size: 10px;
   color: #999;
+}
+
+/* event page */
+/* proporción 9×16 (vertical tipo story) */
+.ratio-9x16 {
+  --bs-aspect-ratio: calc(100% / (9 / 16)); /* 56.25% ≈ 9:16 */
+}
+
+/* gradiente VNTBOX */
+.btn-gradient {
+  background: radial-gradient(circle at top left, #9e2cf5 0%, #593196 100%);
+  border: none;
+  color: #fff;
+}
+.btn-gradient:hover {
+  filter: brightness(1.1);
+}
+
+/* avatar placeholder en comentarios */
+.avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  background: #d5d5d5;
 }
 
 /* Event detail */
